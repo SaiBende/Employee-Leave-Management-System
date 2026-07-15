@@ -62,6 +62,17 @@ export interface DashboardData {
   recentActivities: LeaveResponse[]
 }
 
+export interface LeaveBalance {
+  id: number
+  employeeId: number
+  employeeName: string
+  leaveType: string
+  totalDays: number
+  usedDays: number
+  remainingDays: number
+  year: number
+}
+
 export interface ApiResponse<T = unknown> {
   success: boolean
   message: string

@@ -3,12 +3,15 @@ package com.leavemanagement.service;
 import com.leavemanagement.dto.*;
 import com.leavemanagement.entity.Employee;
 import com.leavemanagement.entity.Leave;
+import com.leavemanagement.entity.LeaveBalance;
 import com.leavemanagement.enums.LeaveStatus;
 import com.leavemanagement.enums.Role;
 import com.leavemanagement.repository.EmployeeRepository;
+import com.leavemanagement.repository.LeaveBalanceRepository;
 import com.leavemanagement.repository.LeaveRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -16,11 +19,14 @@ public class ManagerService {
 
     private final LeaveRepository leaveRepository;
     private final EmployeeRepository employeeRepository;
+    private final LeaveBalanceRepository leaveBalanceRepository;
 
     public ManagerService(LeaveRepository leaveRepository,
-                          EmployeeRepository employeeRepository) {
+                          EmployeeRepository employeeRepository,
+                          LeaveBalanceRepository leaveBalanceRepository) {
         this.leaveRepository = leaveRepository;
         this.employeeRepository = employeeRepository;
+        this.leaveBalanceRepository = leaveBalanceRepository;
     }
 
     public List<LeaveResponse> getPendingLeaves(Employee manager) {
@@ -44,7 +50,21 @@ public class ManagerService {
 
         leave.setStatus(LeaveStatus.APPROVED);
         leave = leaveRepository.save(leave);
+
+        deductBalance(leave);
         return toResponse(leave);
+    }
+
+    private void deductBalance(Leave leave) {
+        int year = leave.getStartDate().getYear();
+        int days = (int) ChronoUnit.DAYS.between(leave.getStartDate(), leave.getEndDate()) + 1;
+        LeaveBalance balance = leaveBalanceRepository
+            .findByEmployeeIdAndLeaveTypeAndYear(leave.getEmployee().getId(), leave.getLeaveType(), year)
+            .orElse(null);
+        if (balance != null) {
+            balance.setUsedDays(balance.getUsedDays() + days);
+            leaveBalanceRepository.save(balance);
+        }
     }
 
     public LeaveResponse rejectLeave(Long leaveId, String comments, Employee manager) {

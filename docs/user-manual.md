@@ -34,6 +34,7 @@ The Employee Leave Management System allows employees to apply for leave and man
 
 The Employee Dashboard displays:
 - **Leave Statistics**: Total, approved, pending, and rejected leave counts
+- **Leave Balances**: Progress cards showing remaining Annual, Sick, and Personal leave days
 - **Recent Activity**: Timeline of your recent leave requests with status updates
 
 ### 3. Apply for Leave
@@ -69,7 +70,13 @@ The Employee Dashboard displays:
 - Confirm the cancellation
 - The leave status changes to Cancelled
 
-### 8. View Profile
+### 8. View Leave Balances
+
+1. Click **Leave Balances** in the sidebar (or view on the Dashboard)
+2. See your remaining leave days for each leave type (Annual, Sick, Personal)
+3. Each card shows: remaining days, total days, used days, and a progress bar
+
+### 9. View Profile
 
 1. Click **Profile** in the sidebar
 2. View your name, email, department, role, and account creation date
@@ -123,7 +130,15 @@ The Manager Dashboard displays:
 3. Click **Add Employee**
 4. The new employee can now login with the provided credentials
 
-### 7. Register a New Manager
+### 7. Manage Leave Balances
+
+1. Click **Leave Balances** in the sidebar
+2. View all team members and their current leave balances
+3. Click the **chevron** to expand a team member's details
+4. Click **Edit** to update total or used days for any leave type
+5. Changes take effect immediately — the employee will see updated balances
+
+### 8. Register a New Manager
 
 - Anyone can register as a manager from the Register page
 - Fill in name, email, password, select department, and role as Manager
@@ -135,8 +150,8 @@ The Manager Dashboard displays:
 
 ### Sidebar (Desktop)
 - The sidebar shows different menu items based on your role
-- **Employee Menu**: Dashboard, Apply Leave, Leave History, Profile
-- **Manager Menu**: Dashboard, Pending Approvals, My Team, Add Employee, Profile
+- **Employee Menu**: Dashboard, Apply Leave, Leave History, Leave Balances, Profile
+- **Manager Menu**: Dashboard, Pending Approvals, My Team, Add Employee, Leave Balances, Profile
 
 ### Mobile
 - The sidebar is hidden by default on mobile

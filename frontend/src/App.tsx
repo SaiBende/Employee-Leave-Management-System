@@ -11,11 +11,13 @@ import LeaveHistory from '@/pages/employee/LeaveHistory'
 import LeaveDetails from '@/pages/employee/LeaveDetails'
 import EditLeave from '@/pages/employee/EditLeave'
 import Profile from '@/pages/employee/Profile'
+import MyBalances from '@/pages/employee/MyBalances'
 import ManagerDashboard from '@/pages/manager/ManagerDashboard'
 import PendingApprovals from '@/pages/manager/PendingApprovals'
 import TeamMembers from '@/pages/manager/TeamMembers'
 import AddEmployee from '@/pages/manager/AddEmployee'
 import EmployeeLeaveHistory from '@/pages/manager/EmployeeLeaveHistory'
+import TeamBalances from '@/pages/manager/TeamBalances'
 import NotFound from '@/pages/NotFound'
 
 function ProtectedRoute({ children, allowedRole }: { children: React.ReactNode; allowedRole?: string }) {
@@ -89,6 +91,7 @@ export default function App() {
             <Route path="/employee/leaves/:id" element={<LeaveDetails />} />
             <Route path="/employee/leaves/:id/edit" element={<EditLeave />} />
             <Route path="/employee/profile" element={<Profile />} />
+            <Route path="/employee/balances" element={<MyBalances />} />
           </Route>
 
           <Route element={<ProtectedRoute allowedRole="MANAGER"><AppLayout /></ProtectedRoute>}>
@@ -97,6 +100,7 @@ export default function App() {
             <Route path="/manager/employees" element={<TeamMembers />} />
             <Route path="/manager/employees/add" element={<AddEmployee />} />
             <Route path="/manager/employees/:id/leaves" element={<EmployeeLeaveHistory />} />
+            <Route path="/manager/balances" element={<TeamBalances />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

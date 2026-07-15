@@ -83,6 +83,11 @@ Once the backend is running:
 | GET | `/api/manager/employees` | Manager | Team members |
 | GET | `/api/manager/employees/{id}/leaves` | Manager | Employee leave history |
 | GET | `/api/dashboard/employee` | Yes | Employee dashboard stats |
+| GET | `/api/leave-balances/me` | Yes | Leave balances for current user |
+| GET | `/api/leave-balances/team` | Manager | Team leave balances |
+| GET | `/api/leave-balances/employee/{id}` | Manager| Employee leave balances |
+| PUT | `/api/leave-balances/{id}` | Manager | Update leave balance |
+| GET | `/api/dashboard/employee` | Yes | Employee dashboard stats |
 | GET | `/api/dashboard/manager` | Manager | Manager dashboard stats |
 
 ## Project Structure
@@ -111,8 +116,8 @@ Employee Leave Management System/
 │   │   ├── layouts/            # AppLayout, AuthLayout
 │   │   ├── pages/              # All route pages
 │   │   │   ├── auth/           # Login, Register
-│   │   │   ├── employee/       # Dashboard, ApplyLeave, Leaves, Profile
-│   │   │   └── manager/        # Dashboard, PendingApprovals, Team, AddEmployee
+│   │   │   ├── employee/       # Dashboard, ApplyLeave, Leaves, Profile, MyBalances
+│   │   │   └── manager/        # Dashboard, PendingApprovals, Team, AddEmployee, TeamBalances
 │   │   ├── types/              # TypeScript interfaces
 │   │   └── lib/                # Utility functions
 │   ├── index.html
@@ -132,8 +137,9 @@ Employee Leave Management System/
 - **Role-based access** — Manager and Employee roles with distinct dashboards and permissions
 - **JWT authentication** — Secure token-based auth with automatic refresh flow
 - **Leave lifecycle** — Apply, edit, cancel, approve, reject with status tracking
-- **Manager workflows** — View team, approve/reject with comments, audit employee history
-- **Dashboard analytics** — Stats cards with leave breakdown, recent activity feed
+- **Leave Balance Tracking** — Track remaining leave days (Annual, Sick, Personal) per employee per year
+- **Manager workflows** — View team, approve/reject with comments, audit employee history, edit leave balances
+- **Dashboard analytics** — Stats cards with leave breakdown, recent activity feed, leave balance progress bars
 - **Responsive UI** — Mobile-friendly sidebar, gradient theme, Tailwind CSS v4
 
 ## Building for Production

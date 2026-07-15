@@ -81,6 +81,27 @@ CREATE INDEX idx_leaves_employee_status ON leaves(employee_id, status);
 CREATE INDEX idx_leaves_dates ON leaves(start_date, end_date);
 
 -- ============================
+-- LEAVE BALANCES
+-- ============================
+CREATE TABLE leave_balances (
+    id BIGSERIAL PRIMARY KEY,
+    employee_id BIGINT NOT NULL,
+    leave_type leave_type NOT NULL,
+    total_days INTEGER NOT NULL,
+    used_days INTEGER NOT NULL DEFAULT 0,
+    year INTEGER NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_leave_balance_employee FOREIGN KEY (employee_id)
+        REFERENCES employees(id) ON DELETE CASCADE,
+    CONSTRAINT uq_employee_leave_type_year UNIQUE (employee_id, leave_type, year)
+);
+
+CREATE INDEX idx_leave_balances_employee ON leave_balances(employee_id);
+CREATE INDEX idx_leave_balances_year ON leave_balances(year);
+
+-- ============================
 -- TRIGGER: auto-update updated_at
 -- ============================
 CREATE OR REPLACE FUNCTION update_updated_at()
@@ -101,4 +122,8 @@ CREATE TRIGGER trg_employees_updated_at
 
 CREATE TRIGGER trg_leaves_updated_at
     BEFORE UPDATE ON leaves
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER trg_leave_balances_updated_at
+    BEFORE UPDATE ON leave_balances
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();

@@ -55,11 +55,11 @@ types/         → TypeScript interfaces matching backend DTOs
 
 ### Layered Architecture
 ```
-Controller   → HTTP layer, request validation, response wrapping
-Service      → Business logic, transaction management
+Controller   → HTTP layer, request validation, response wrapping (LeaveBalance, Dashboard, etc.)
+Service      → Business logic, transaction management (LeaveBalanceService deducts/restores on approve)
 Repository   → Data access via Spring Data JPA
-Entity       → JPA entity mapping to database tables
-DTO          → Request/Response objects for API communication
+Entity       → JPA entity mapping to database tables (Departments, Employees, Leaves, LeaveBalances)
+DTO          → Request/Response objects for API communication (LeaveBalanceResponse, UpdateLeaveBalanceRequest)
 Security     → JWT filter, authentication provider, current user resolver
 Config       → Security rules, OpenAPI config, web config, database seeder
 ```
@@ -105,7 +105,9 @@ Manager → GET /api/manager/pending-leaves → sees request
     ↓
 Manager → PUT /api/manager/leaves/{id}/approve
     ↓
-LeaveService updates status to APPROVED, sends response
+ManagerService updates status to APPROVED
     ↓
-Employee dashboard now shows approved leave count
+ManagerService.deductBalance() deducts leave days from employee's balance
+    ↓
+Employee dashboard now shows updated leave balance and approved leave count
 ```

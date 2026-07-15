@@ -1,21 +1,28 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import type { ApiResponse, LeaveResponse } from '@/types'
-import { CalendarPlus, AlertCircle, CheckCircle2, ArrowLeft, CalendarDays, MessageSquare } from 'lucide-react'
+import type { ApiResponse, LeaveResponse, LeaveBalance } from '@/types'
+import { CalendarPlus, AlertCircle, CheckCircle2, ArrowLeft, CalendarDays, MessageSquare, Coins } from 'lucide-react'
 
 const leaveTypes = ['ANNUAL', 'SICK', 'PERSONAL', 'MATERNITY', 'PATERNITY', 'OTHER']
 
 export default function ApplyLeave() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ leaveType: 'ANNUAL', startDate: '', endDate: '', reason: '' })
+  const [balances, setBalances] = useState<LeaveBalance[]>([])
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    api.get<ApiResponse<LeaveBalance[]>>('/leave-balances/me')
+      .then((res) => setBalances(res.data))
+      .catch(console.error)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -92,6 +99,20 @@ export default function ApplyLeave() {
                   ))}
                 </Select>
               </div>
+              {(() => {
+                const bal = balances.find((b) => b.leaveType === form.leaveType)
+                if (!bal) return null
+                return (
+                  <div className="mt-2 flex items-center gap-2 text-sm">
+                    <Coins className="h-4 w-4 text-emerald-500" />
+                    <span className="text-muted-foreground">Remaining balance:</span>
+                    <span className="font-semibold text-foreground">{bal.remainingDays} days</span>
+                    {bal.remainingDays <= 0 && (
+                      <span className="text-xs text-destructive font-medium">(Insufficient balance)</span>
+                    )}
+                  </div>
+                )
+              })()}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
