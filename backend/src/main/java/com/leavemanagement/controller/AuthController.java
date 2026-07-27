@@ -1,6 +1,9 @@
 package com.leavemanagement.controller;
 
+package com.leavemanagement.controller;
+
 import com.leavemanagement.dto.*;
+import com.leavemanagement.repository.EmployeeRepository;
 import com.leavemanagement.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -8,15 +11,26 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication", description = "Login and registration endpoints")
 public class AuthController {
 
     private final AuthService authService;
+    private final EmployeeRepository employeeRepository;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, EmployeeRepository employeeRepository) {
         this.authService = authService;
+        this.employeeRepository = employeeRepository;
+    }
+
+    @GetMapping("/setup")
+    @Operation(summary = "Check if system needs initial setup")
+    public ResponseEntity<?> checkSetup() {
+        boolean needsSetup = employeeRepository.count() == 0;
+        return ResponseEntity.ok(Map.of("needsSetup", needsSetup));
     }
 
     @PostMapping("/register")

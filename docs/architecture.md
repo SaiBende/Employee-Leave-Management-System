@@ -36,7 +36,7 @@ types/         → TypeScript interfaces matching backend DTOs
 ### Routing
 - **Public routes**: Home, Login, Register, 404
 - **Protected routes**: All other pages require valid JWT
-- **Role-based navigation**: Sidebar shows different menu items for MANAGER vs EMPLOYEE
+- **Role-based navigation**: Sidebar shows different menu items for ADMIN, MANAGER, and EMPLOYEE roles
 - **Route protection**: `ProtectedRoute` component redirects to `/login` if no token
 
 ### State Management
@@ -74,8 +74,11 @@ Config       → Security rules, OpenAPI config, web config, database seeder
 6. JwtAuthenticationFilter extracts and validates token on every request
 7. SecurityConfig enforces role-based access:
    - /api/auth/** → permit all
-   - /api/employees → MANAGER only for POST, authenticated for GET
+   - /api/admin/** → ADMIN only
    - /api/manager/** → MANAGER only
+   - /api/employees/** → ADMIN/MANAGER/EMPLOYEE with granular controller-level checks
+   - /api/leave-balances/me → all authenticated roles
+   - /api/leave-balances/** → ADMIN or MANAGER
    - Everything else → authenticated
 ```
 
@@ -89,6 +92,24 @@ Config       → Security rules, OpenAPI config, web config, database seeder
 | Vite over CRA | Faster dev server, better HMR, native ESM |
 | Tailwind CSS | Utility-first, rapid prototyping, small production bundle |
 | Spring Data JPA | Reduces boilerplate, repository pattern, pagination support |
+
+## Role Hierarchy
+
+```
+ADMIN (org-wide access)
+  └── Can manage all employees, departments, and leave balances
+  └── Can view/edit any leave request
+  └── Cannot apply for leave (not an employee role)
+
+MANAGER (team-level access)
+  └── Can manage direct reports only
+  └── Can approve/reject team leaves, edit team balances
+  └── Can view team member profiles and history
+
+EMPLOYEE (self-only access)
+  └── Can apply, edit, cancel own leaves
+  └── Can view own profile, balances, and leave history
+```
 
 ## Data Flow: Leave Application
 

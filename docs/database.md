@@ -130,7 +130,8 @@ Tracks available leave days per employee, per leave type, per year. Balance is d
 ## ENUM Types
 
 ### employee_role
-- `MANAGER` — Can manage team, approve/reject leaves
+- `ADMIN` — Organization-wide access: manage employees, departments, and all leave balances
+- `MANAGER` — Can manage team, approve/reject leaves, edit team balances
 - `EMPLOYEE` — Can apply and manage own leaves
 
 ### leave_status

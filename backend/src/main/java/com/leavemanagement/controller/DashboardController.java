@@ -4,6 +4,7 @@ import com.leavemanagement.dto.ApiResponse;
 import com.leavemanagement.dto.DashboardResponse;
 import com.leavemanagement.dto.LeaveResponse;
 import com.leavemanagement.entity.Employee;
+import com.leavemanagement.entity.Leave;
 import com.leavemanagement.enums.LeaveStatus;
 import com.leavemanagement.enums.Role;
 import com.leavemanagement.repository.EmployeeRepository;
@@ -35,31 +36,26 @@ public class DashboardController {
     @GetMapping("/employee")
     @Operation(summary = "Get employee dashboard statistics")
     public ResponseEntity<?> employeeDashboard(@CurrentUser Employee employee) {
-        List<LeaveResponse> leaves = leaveRepository
-            .findByEmployeeIdOrderByCreatedAtDesc(employee.getId())
-            .stream().limit(5)
-            .map(l -> LeaveResponse.builder()
-                .id(l.getId())
-                .employeeId(l.getEmployee().getId())
-                .employeeName(l.getEmployee().getName())
-                .leaveType(l.getLeaveType().name())
-                .startDate(l.getStartDate())
-                .endDate(l.getEndDate())
-                .reason(l.getReason())
-                .status(l.getStatus().name())
-                .createdAt(l.getCreatedAt())
-                .build())
-            .toList();
-
-        List<com.leavemanagement.entity.Leave> allLeaves =
-            leaveRepository.findByEmployeeIdOrderByCreatedAtDesc(employee.getId());
+        List<Leave> leaves = leaveRepository.findByEmployeeIdOrderByCreatedAtDesc(employee.getId());
 
         DashboardResponse dashboard = DashboardResponse.builder()
-            .totalLeaves(allLeaves.size())
-            .approvedLeaves(allLeaves.stream().filter(l -> l.getStatus() == LeaveStatus.APPROVED).count())
-            .pendingLeaves(allLeaves.stream().filter(l -> l.getStatus() == LeaveStatus.PENDING).count())
-            .rejectedLeaves(allLeaves.stream().filter(l -> l.getStatus() == LeaveStatus.REJECTED).count())
-            .recentActivities(leaves)
+            .totalLeaves(leaves.size())
+            .approvedLeaves(leaves.stream().filter(l -> l.getStatus() == LeaveStatus.APPROVED).count())
+            .pendingLeaves(leaves.stream().filter(l -> l.getStatus() == LeaveStatus.PENDING).count())
+            .rejectedLeaves(leaves.stream().filter(l -> l.getStatus() == LeaveStatus.REJECTED).count())
+            .recentActivities(leaves.stream().limit(5)
+                .map(l -> LeaveResponse.builder()
+                    .id(l.getId())
+                    .employeeId(l.getEmployee().getId())
+                    .employeeName(l.getEmployee().getName())
+                    .leaveType(l.getLeaveType().name())
+                    .startDate(l.getStartDate())
+                    .endDate(l.getEndDate())
+                    .reason(l.getReason())
+                    .status(l.getStatus().name())
+                    .createdAt(l.getCreatedAt())
+                    .build())
+                .toList())
             .build();
 
         return ResponseEntity.ok(new ApiResponse(true, "Success", dashboard));
@@ -76,26 +72,13 @@ public class DashboardController {
         List<Employee> team = employeeRepository.findByManagerId(employee.getId());
         List<Long> teamIds = team.stream().map(Employee::getId).toList();
 
-        List<com.leavemanagement.entity.Leave> allTeamLeaves =
-            leaveRepository.findAll();
+        if (teamIds.isEmpty()) {
+            return ResponseEntity.ok(new ApiResponse(true, "Success",
+                DashboardResponse.builder().totalEmployees(0).build()));
+        }
 
-        List<com.leavemanagement.entity.Leave> teamLeaves = allTeamLeaves.stream()
-            .filter(l -> teamIds.contains(l.getEmployee().getId()))
-            .toList();
-
-        List<LeaveResponse> recent = teamLeaves.stream().limit(5)
-            .map(l -> LeaveResponse.builder()
-                .id(l.getId())
-                .employeeId(l.getEmployee().getId())
-                .employeeName(l.getEmployee().getName())
-                .leaveType(l.getLeaveType().name())
-                .startDate(l.getStartDate())
-                .endDate(l.getEndDate())
-                .reason(l.getReason())
-                .status(l.getStatus().name())
-                .createdAt(l.getCreatedAt())
-                .build())
-            .toList();
+        List<Leave> teamLeaves = leaveRepository.findByEmployeeIdIn(teamIds);
+        List<Leave> recentLeaves = leaveRepository.findTop5ByEmployeeIdInOrderByCreatedAtDesc(teamIds);
 
         DashboardResponse dashboard = DashboardResponse.builder()
             .totalEmployees(team.size())
@@ -103,7 +86,19 @@ public class DashboardController {
             .pendingApprovals(teamLeaves.stream().filter(l -> l.getStatus() == LeaveStatus.PENDING).count())
             .approvedLeaves(teamLeaves.stream().filter(l -> l.getStatus() == LeaveStatus.APPROVED).count())
             .rejectedLeaves(teamLeaves.stream().filter(l -> l.getStatus() == LeaveStatus.REJECTED).count())
-            .recentActivities(recent)
+            .recentActivities(recentLeaves.stream()
+                .map(l -> LeaveResponse.builder()
+                    .id(l.getId())
+                    .employeeId(l.getEmployee().getId())
+                    .employeeName(l.getEmployee().getName())
+                    .leaveType(l.getLeaveType().name())
+                    .startDate(l.getStartDate())
+                    .endDate(l.getEndDate())
+                    .reason(l.getReason())
+                    .status(l.getStatus().name())
+                    .createdAt(l.getCreatedAt())
+                    .build())
+                .toList())
             .build();
 
         return ResponseEntity.ok(new ApiResponse(true, "Success", dashboard));

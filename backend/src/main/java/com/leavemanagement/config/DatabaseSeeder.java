@@ -61,6 +61,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
             initLeaveBalances(alice, bob, charlie);
         }
+
     }
 
     private void initLeaveBalances(Employee alice, Employee bob, Employee charlie) {

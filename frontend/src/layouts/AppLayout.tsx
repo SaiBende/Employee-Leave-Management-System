@@ -3,7 +3,7 @@ import { useAuth } from '@/context/AuthContext'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Users, LogOut, User, FileText, Clock,
-  CalendarPlus, ChevronLeft, Menu, CheckSquare, Building2, Coins
+  CalendarPlus, ChevronLeft, Menu, CheckSquare, Building2, Coins, UserPlus
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -24,13 +24,22 @@ const managerNav = [
   { to: '/employee/profile', label: 'Profile', icon: Building2 },
 ]
 
+const adminNav = [
+  { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/admin/employees', label: 'All Employees', icon: Users },
+  { to: '/admin/employees/add', label: 'Add Employee', icon: UserPlus },
+  { to: '/admin/departments', label: 'Departments', icon: Building2 },
+  { to: '/employee/profile', label: 'Profile', icon: User },
+]
+
 export default function AppLayout() {
   const { user, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const isAdmin = user?.role === 'ADMIN'
   const isManager = user?.role === 'MANAGER'
-  const navItems = isManager ? managerNav : employeeNav
+  const navItems = isAdmin ? adminNav : isManager ? managerNav : employeeNav
 
   const handleLogout = () => {
     logout()
@@ -75,7 +84,7 @@ export default function AppLayout() {
               <p className="text-sm font-semibold text-foreground truncate">{user?.name}</p>
               <span className={cn(
                 "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider",
-                isManager ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+                isAdmin ? "bg-amber-100 text-amber-700" : isManager ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
               )}>
                 {user?.role}
               </span>
@@ -86,7 +95,7 @@ export default function AppLayout() {
         {/* Navigation */}
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           <p className="px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest pb-2">
-            {isManager ? 'Manager Menu' : 'Employee Menu'}
+            {isAdmin ? 'Admin Menu' : isManager ? 'Manager Menu' : 'Employee Menu'}
           </p>
           {navItems.map((item) => {
             const Icon = item.icon

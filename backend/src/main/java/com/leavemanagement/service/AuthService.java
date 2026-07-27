@@ -37,7 +37,8 @@ public class AuthService {
         Department department = departmentRepository.findById(request.getDepartmentId())
             .orElseThrow(() -> new IllegalArgumentException("Department not found"));
 
-        Role role = Role.valueOf(request.getRole().toUpperCase());
+        boolean isFirstUser = employeeRepository.count() == 0;
+        Role role = isFirstUser ? Role.ADMIN : Role.valueOf(request.getRole().toUpperCase());
 
         Employee employee = Employee.builder()
             .name(request.getName())

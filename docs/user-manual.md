@@ -16,6 +16,7 @@ The Employee Leave Management System allows employees to apply for leave and man
 
 | Role | Email | Password |
 |------|-------|----------|
+| Admin | admin@company.com | admin123 |
 | Manager | alice@company.com | password123 |
 | Employee | charlie@company.com | password123 |
 
@@ -140,9 +141,52 @@ The Manager Dashboard displays:
 
 ### 8. Register a New Manager
 
-- Anyone can register as a manager from the Register page
-- Fill in name, email, password, select department, and role as Manager
+- Anyone can register as a manager from the Register page (after admin exists)
+- Fill in name, email, password, select department
 - New managers do not have any employees assigned initially
+
+### 9. First-Time Setup (Admin Registration)
+
+- When the system has **no users**, the first registration creates a **System Admin**
+- The Register page will show an amber banner: "First registration — you will be the System Admin"
+- Admin can then manage departments, employees, and view all data
+- After admin exists, subsequent registrations create MANAGER accounts
+
+---
+
+---
+
+## Admin Guide
+
+### 1. Login
+
+- Login using admin credentials (admin@company.com / admin123)
+- You will be redirected to the Admin Dashboard
+
+### 2. Admin Dashboard
+
+The Admin Dashboard displays organization-wide statistics:
+- **Total Employees**, **Total Leaves**, **Pending Approvals**, **Approved**, **Rejected**
+- **Recent Activities**: All leave requests across the organization
+
+### 3. Manage Employees
+
+1. Click **All Employees** in the sidebar
+2. View all employees with their name, email, department, and role
+3. Click the **Edit** icon to modify an employee's details
+4. Click the **Delete** icon to remove an employee
+
+### 4. Manage Departments
+
+1. Click **Departments** in the sidebar
+2. View all departments
+3. Add a new department by typing the name and clicking **Add**
+4. Delete a department by clicking the **Trash** icon
+
+### 5. View All Leave Balances
+
+- Navigate to **Leave Balances** in the sidebar (shared with Manager)
+- Admins can see and edit leave balances for every employee in the organization
 
 ---
 
@@ -150,6 +194,7 @@ The Manager Dashboard displays:
 
 ### Sidebar (Desktop)
 - The sidebar shows different menu items based on your role
+- **Admin Menu**: Dashboard, All Employees, Departments, Profile
 - **Employee Menu**: Dashboard, Apply Leave, Leave History, Leave Balances, Profile
 - **Manager Menu**: Dashboard, Pending Approvals, My Team, Add Employee, Leave Balances, Profile
 

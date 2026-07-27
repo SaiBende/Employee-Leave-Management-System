@@ -48,6 +48,10 @@ public class ManagerService {
             throw new IllegalArgumentException("Leave is not in pending state");
         }
 
+        if (!isTeamMember(manager, leave.getEmployee())) {
+            throw new SecurityException("This leave does not belong to your team");
+        }
+
         leave.setStatus(LeaveStatus.APPROVED);
         leave = leaveRepository.save(leave);
 
@@ -75,6 +79,10 @@ public class ManagerService {
             throw new IllegalArgumentException("Leave is not in pending state");
         }
 
+        if (!isTeamMember(manager, leave.getEmployee())) {
+            throw new SecurityException("This leave does not belong to your team");
+        }
+
         leave.setStatus(LeaveStatus.REJECTED);
         leave.setManagerComments(comments);
         leave = leaveRepository.save(leave);
@@ -100,6 +108,11 @@ public class ManagerService {
             .createdAt(leave.getCreatedAt())
             .updatedAt(leave.getUpdatedAt())
             .build();
+    }
+
+    private boolean isTeamMember(Employee manager, Employee employee) {
+        return employee.getManager() != null
+            && employee.getManager().getId().equals(manager.getId());
     }
 
     private EmployeeResponse toEmployeeResponse(Employee emp) {

@@ -14,7 +14,7 @@ DROP TYPE IF EXISTS leave_type;
 -- ============================
 -- ENUMS
 -- ============================
-CREATE TYPE employee_role AS ENUM ('MANAGER', 'EMPLOYEE');
+CREATE TYPE employee_role AS ENUM ('ADMIN', 'MANAGER', 'EMPLOYEE');
 CREATE TYPE leave_status AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED');
 CREATE TYPE leave_type AS ENUM ('ANNUAL', 'SICK', 'PERSONAL', 'MATERNITY', 'PATERNITY', 'OTHER');
 

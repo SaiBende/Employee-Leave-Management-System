@@ -10,7 +10,6 @@ import com.leavemanagement.service.LeaveBalanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,47 +29,59 @@ public class LeaveBalanceController {
     @Operation(summary = "Get my leave balances for current year")
     public ResponseEntity<?> getMyBalances(@CurrentUser Employee employee) {
         List<LeaveBalanceResponse> balances = leaveBalanceService.getMyBalances(employee.getId());
-        return ResponseEntity.ok(new com.leavemanagement.dto.ApiResponse(true, "Success", balances));
+        return ResponseEntity.ok(new ApiResponse(true, "Success", balances));
     }
 
     @GetMapping("/employee/{employeeId}")
-    @Operation(summary = "Get leave balances for a specific employee (manager only)")
+    @Operation(summary = "Get leave balances for a specific employee")
     public ResponseEntity<?> getEmployeeBalances(@PathVariable Long employeeId,
                                                   @CurrentUser Employee employee) {
-        if (employee.getRole() != Role.MANAGER) {
+        try {
+            List<LeaveBalanceResponse> balances = leaveBalanceService.getEmployeeBalances(employeeId, employee);
+            return ResponseEntity.ok(new ApiResponse(true, "Success", balances));
+        } catch (Exception e) {
             return ResponseEntity.status(403)
-                .body(new com.leavemanagement.dto.ApiResponse(false, "Manager access required", null));
+                .body(new ApiResponse(false, e.getMessage(), null));
         }
-        List<LeaveBalanceResponse> balances = leaveBalanceService.getEmployeeBalances(employeeId);
-        return ResponseEntity.ok(new com.leavemanagement.dto.ApiResponse(true, "Success", balances));
     }
 
     @GetMapping("/team")
-    @Operation(summary = "Get leave balances for all team members (manager only)")
+    @Operation(summary = "Get leave balances for all team members")
     public ResponseEntity<?> getTeamBalances(@CurrentUser Employee employee) {
-        if (employee.getRole() != Role.MANAGER) {
+        if (employee.getRole() != Role.MANAGER && employee.getRole() != Role.ADMIN) {
             return ResponseEntity.status(403)
-                .body(new com.leavemanagement.dto.ApiResponse(false, "Manager access required", null));
+                .body(new ApiResponse(false, "Manager or admin access required", null));
         }
-        List<LeaveBalanceResponse> balances = leaveBalanceService.getTeamBalances(employee.getId());
-        return ResponseEntity.ok(new com.leavemanagement.dto.ApiResponse(true, "Success", balances));
+        List<LeaveBalanceResponse> balances = leaveBalanceService.getTeamBalances(employee);
+        return ResponseEntity.ok(new ApiResponse(true, "Success", balances));
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update leave balance for a team member (manager only)")
+    @Operation(summary = "Update leave balance for a team member")
     public ResponseEntity<?> updateBalance(@PathVariable Long id,
                                             @RequestBody UpdateLeaveBalanceRequest request,
                                             @CurrentUser Employee employee) {
-        if (employee.getRole() != Role.MANAGER) {
+        if (employee.getRole() != Role.MANAGER && employee.getRole() != Role.ADMIN) {
             return ResponseEntity.status(403)
-                .body(new com.leavemanagement.dto.ApiResponse(false, "Manager access required", null));
+                .body(new ApiResponse(false, "Manager or admin access required", null));
         }
         try {
-            LeaveBalanceResponse balance = leaveBalanceService.updateBalance(id, request);
-            return ResponseEntity.ok(new com.leavemanagement.dto.ApiResponse(true, "Balance updated", balance));
+            LeaveBalanceResponse balance = leaveBalanceService.updateBalance(id, request, employee);
+            return ResponseEntity.ok(new ApiResponse(true, "Balance updated", balance));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
-                .body(new com.leavemanagement.dto.ApiResponse(false, e.getMessage(), null));
+                .body(new ApiResponse(false, e.getMessage(), null));
         }
+    }
+
+    @GetMapping("/all")
+    @Operation(summary = "Get all leave balances (Admin only)")
+    public ResponseEntity<?> getAllBalances(@CurrentUser Employee employee) {
+        if (employee.getRole() != Role.ADMIN) {
+            return ResponseEntity.status(403)
+                .body(new ApiResponse(false, "Admin access required", null));
+        }
+        List<LeaveBalanceResponse> balances = leaveBalanceService.getAllBalances();
+        return ResponseEntity.ok(new ApiResponse(true, "Success", balances));
     }
 }

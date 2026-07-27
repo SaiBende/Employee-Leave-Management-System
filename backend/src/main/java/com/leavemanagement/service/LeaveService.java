@@ -8,6 +8,7 @@ import com.leavemanagement.entity.Leave;
 import com.leavemanagement.enums.LeaveStatus;
 import com.leavemanagement.enums.LeaveType;
 import com.leavemanagement.enums.Role;
+import com.leavemanagement.repository.EmployeeRepository;
 import com.leavemanagement.repository.LeaveRepository;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +18,12 @@ import java.util.List;
 public class LeaveService {
 
     private final LeaveRepository leaveRepository;
+    private final EmployeeRepository employeeRepository;
 
-    public LeaveService(LeaveRepository leaveRepository) {
+    public LeaveService(LeaveRepository leaveRepository,
+                        EmployeeRepository employeeRepository) {
         this.leaveRepository = leaveRepository;
+        this.employeeRepository = employeeRepository;
     }
 
     public LeaveResponse apply(LeaveRequest request, Employee employee) {
@@ -46,7 +50,8 @@ public class LeaveService {
             .orElseThrow(() -> new IllegalArgumentException("Leave not found"));
 
         if (!leave.getEmployee().getId().equals(employee.getId())
-            && employee.getRole() != Role.MANAGER) {
+            && !isManagerOf(employee, leave.getEmployee())
+            && employee.getRole() != Role.ADMIN) {
             throw new SecurityException("Access denied");
         }
 
@@ -108,9 +113,23 @@ public class LeaveService {
         return leaves.stream().map(this::toResponse).toList();
     }
 
-    public List<LeaveResponse> getEmployeeLeaves(Long employeeId) {
+    public List<LeaveResponse> getEmployeeLeaves(Long employeeId, Employee currentUser) {
+        Employee target = employeeRepository.findById(employeeId)
+            .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+
+        if (!currentUser.getId().equals(employeeId)
+            && !isManagerOf(currentUser, target)
+            && currentUser.getRole() != Role.ADMIN) {
+            throw new SecurityException("Access denied");
+        }
+
         return leaveRepository.findByEmployeeIdOrderByCreatedAtDesc(employeeId)
             .stream().map(this::toResponse).toList();
+    }
+
+    private boolean isManagerOf(Employee manager, Employee employee) {
+        return employee.getManager() != null
+            && employee.getManager().getId().equals(manager.getId());
     }
 
     private LeaveResponse toResponse(Leave leave) {

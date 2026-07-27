@@ -77,10 +77,15 @@ public class ManagerController {
     @GetMapping("/employees/{id}/leaves")
     @Operation(summary = "View leave history of a specific employee")
     public ResponseEntity<?> getEmployeeLeaves(@PathVariable Long id,
-                                                @CurrentUser Employee employee) {
+                                                 @CurrentUser Employee employee) {
         requireManager(employee);
-        List<LeaveResponse> leaves = leaveService.getEmployeeLeaves(id);
-        return ResponseEntity.ok(new ApiResponse(true, "Success", leaves));
+        try {
+            List<LeaveResponse> leaves = leaveService.getEmployeeLeaves(id, employee);
+            return ResponseEntity.ok(new ApiResponse(true, "Success", leaves));
+        } catch (Exception e) {
+            return ResponseEntity.status(403)
+                .body(new ApiResponse(false, e.getMessage(), null));
+        }
     }
 
     private void requireManager(Employee employee) {

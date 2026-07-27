@@ -18,6 +18,10 @@ import TeamMembers from '@/pages/manager/TeamMembers'
 import AddEmployee from '@/pages/manager/AddEmployee'
 import EmployeeLeaveHistory from '@/pages/manager/EmployeeLeaveHistory'
 import TeamBalances from '@/pages/manager/TeamBalances'
+import AdminDashboard from '@/pages/admin/AdminDashboard'
+import AdminEmployees from '@/pages/admin/AdminEmployees'
+import AdminDepartments from '@/pages/admin/AdminDepartments'
+import AdminAddEmployee from '@/pages/admin/AdminAddEmployee'
 import NotFound from '@/pages/NotFound'
 
 function ProtectedRoute({ children, allowedRole }: { children: React.ReactNode; allowedRole?: string }) {
@@ -33,7 +37,10 @@ function ProtectedRoute({ children, allowedRole }: { children: React.ReactNode; 
 
   if (!user) return <Navigate to="/login" replace />
   if (allowedRole && user.role !== allowedRole) {
-    return <Navigate to={user.role === 'MANAGER' ? '/manager/dashboard' : '/employee/dashboard'} replace />
+    const redirect = user.role === 'ADMIN' ? '/admin/dashboard'
+      : user.role === 'MANAGER' ? '/manager/dashboard'
+      : '/employee/dashboard'
+    return <Navigate to={redirect} replace />
   }
   return <>{children}</>
 }
@@ -50,7 +57,10 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (user) {
-    return <Navigate to={user.role === 'MANAGER' ? '/manager/dashboard' : '/employee/dashboard'} replace />
+    const redirect = user.role === 'ADMIN' ? '/admin/dashboard'
+      : user.role === 'MANAGER' ? '/manager/dashboard'
+      : '/employee/dashboard'
+    return <Navigate to={redirect} replace />
   }
   return <>{children}</>
 }
@@ -101,6 +111,13 @@ export default function App() {
             <Route path="/manager/employees/add" element={<AddEmployee />} />
             <Route path="/manager/employees/:id/leaves" element={<EmployeeLeaveHistory />} />
             <Route path="/manager/balances" element={<TeamBalances />} />
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRole="ADMIN"><AppLayout /></ProtectedRoute>}>
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/employees" element={<AdminEmployees />} />
+            <Route path="/admin/departments" element={<AdminDepartments />} />
+            <Route path="/admin/employees/add" element={<AdminAddEmployee />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

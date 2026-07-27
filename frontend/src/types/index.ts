@@ -2,7 +2,7 @@ export interface User {
   id: number
   name: string
   email: string
-  role: 'MANAGER' | 'EMPLOYEE'
+  role: 'ADMIN' | 'MANAGER' | 'EMPLOYEE'
   department: string
   token: string
 }
@@ -18,6 +18,7 @@ export interface RegisterRequest {
   password: string
   departmentId: number
   role: string
+  managerId?: number
 }
 
 export interface LeaveRequest {

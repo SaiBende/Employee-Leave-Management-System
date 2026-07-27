@@ -47,7 +47,9 @@ npm run dev
 
 Frontend starts at `http://localhost:5173` (proxies `/api` to backend).
 
-## Credentials
+## Setup & Credentials
+
+**First-time setup:** The first person to register automatically becomes **System Admin**.
 
 | Role | Email | Password |
 |------|-------|----------|
@@ -69,25 +71,35 @@ Once the backend is running:
 | POST | `/api/auth/register` | No | Register manager |
 | POST | `/api/auth/login` | No | Login, returns JWT |
 | POST | `/api/auth/logout` | Yes | Logout |
-| GET | `/api/departments` | Yes | List departments |
-| GET | `/api/employees/me` | Yes | Current user profile |
-| GET | `/api/employees` | Manager | All employees |
-| POST | `/api/employees` | Manager | Create employee |
-| POST | `/api/leaves` | Yes | Apply leave |
-| GET | `/api/leaves` | Yes | My leaves |
-| PUT | `/api/leaves/{id}` | Yes | Edit leave |
-| DELETE | `/api/leaves/{id}` | Yes | Cancel leave |
+| GET | `/api/departments` | All | List departments |
+| POST | `/api/departments` | Admin | Create department |
+| DELETE | `/api/departments/{id}` | Admin | Delete department |
+| GET | `/api/employees/me` | All | Current user profile |
+| GET | `/api/employees` | Manager/Admin | All employees (Admin) or team (Manager) |
+| GET | `/api/employees/{id}` | All | Employee by ID (own profile, team, or admin) |
+| POST | `/api/employees` | Manager/Admin | Create employee |
+| PUT | `/api/employees/{id}` | Admin | Update employee |
+| DELETE | `/api/employees/{id}` | Admin | Delete employee |
+| POST | `/api/leaves` | All | Apply leave |
+| GET | `/api/leaves` | All | My leaves |
+| PUT | `/api/leaves/{id}` | All | Edit leave |
+| DELETE | `/api/leaves/{id}` | All | Cancel leave |
 | GET | `/api/manager/pending-leaves` | Manager | Pending approvals |
 | PUT | `/api/manager/leaves/{id}/approve` | Manager | Approve leave |
 | PUT | `/api/manager/leaves/{id}/reject` | Manager | Reject leave |
 | GET | `/api/manager/employees` | Manager | Team members |
 | GET | `/api/manager/employees/{id}/leaves` | Manager | Employee leave history |
-| GET | `/api/dashboard/employee` | Yes | Employee dashboard stats |
-| GET | `/api/leave-balances/me` | Yes | Leave balances for current user |
-| GET | `/api/leave-balances/team` | Manager | Team leave balances |
-| GET | `/api/leave-balances/employee/{id}` | Manager| Employee leave balances |
-| PUT | `/api/leave-balances/{id}` | Manager | Update leave balance |
-| GET | `/api/dashboard/employee` | Yes | Employee dashboard stats |
+| GET | `/api/leave-balances/me` | All | My leave balances |
+| GET | `/api/leave-balances/team` | Manager/Admin | Team leave balances |
+| GET | `/api/leave-balances/employee/{id}` | Manager/Admin | Employee leave balances |
+| GET | `/api/leave-balances/all` | Admin | All leave balances |
+| PUT | `/api/leave-balances/{id}` | Manager/Admin | Update leave balance |
+| GET | `/api/admin/dashboard` | Admin | Admin dashboard stats |
+| GET | `/api/admin/employees` | Admin | All employees |
+| GET | `/api/admin/departments` | Admin | All departments |
+| POST | `/api/admin/departments` | Admin | Create department |
+| DELETE | `/api/admin/departments/{id}` | Admin | Delete department |
+| GET | `/api/dashboard/employee` | All | Employee dashboard stats |
 | GET | `/api/dashboard/manager` | Manager | Manager dashboard stats |
 
 ## Project Structure
@@ -116,6 +128,7 @@ Employee Leave Management System/
 │   │   ├── layouts/            # AppLayout, AuthLayout
 │   │   ├── pages/              # All route pages
 │   │   │   ├── auth/           # Login, Register
+│   │   │   ├── admin/          # Dashboard, Employees, Departments
 │   │   │   ├── employee/       # Dashboard, ApplyLeave, Leaves, Profile, MyBalances
 │   │   │   └── manager/        # Dashboard, PendingApprovals, Team, AddEmployee, TeamBalances
 │   │   ├── types/              # TypeScript interfaces
@@ -134,11 +147,12 @@ Employee Leave Management System/
 
 ## Features
 
-- **Role-based access** — Manager and Employee roles with distinct dashboards and permissions
+- **Role-based access** — Admin, Manager, and Employee roles with distinct dashboards and permissions
 - **JWT authentication** — Secure token-based auth with automatic refresh flow
 - **Leave lifecycle** — Apply, edit, cancel, approve, reject with status tracking
-- **Leave Balance Tracking** — Track remaining leave days (Annual, Sick, Personal) per employee per year
+- **Leave Balance Tracking** — Track remaining leave days (Annual, Sick, Personal) per employee per year, auto-deduct on approval
 - **Manager workflows** — View team, approve/reject with comments, audit employee history, edit leave balances
+- **Admin workflows** — Manage all employees, departments, leave balances; org-wide dashboard
 - **Dashboard analytics** — Stats cards with leave breakdown, recent activity feed, leave balance progress bars
 - **Responsive UI** — Mobile-friendly sidebar, gradient theme, Tailwind CSS v4
 

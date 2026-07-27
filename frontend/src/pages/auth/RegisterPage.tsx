@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { UserPlus, AlertCircle, CheckCircle2, Mail, Lock, User, Building2 } from 'lucide-react'
+import { UserPlus, AlertCircle, CheckCircle2, Mail, Lock, User, Building2, Shield } from 'lucide-react'
 
 interface Dept {
   id: number
@@ -15,18 +15,29 @@ interface Dept {
 export default function RegisterPage() {
   const navigate = useNavigate()
   const [departments, setDepartments] = useState<Dept[]>([])
+  const [needsSetup, setNeedsSetup] = useState(false)
   const [form, setForm] = useState({ name: '', email: '', password: '', departmentId: 0, role: 'MANAGER' })
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    setDepartments([
-      { id: 6, name: 'Engineering' },
-      { id: 7, name: 'HR' },
-      { id: 8, name: 'Marketing' },
-      { id: 9, name: 'Finance' },
-    ])
+    api.get<{ needsSetup: boolean }>('/auth/setup')
+      .then((res) => {
+        setNeedsSetup(res.needsSetup)
+        if (!res.needsSetup) {
+          return api.get<{ success: boolean; data: Dept[] }>('/departments')
+            .then((res) => setDepartments(res.data))
+        }
+      })
+      .catch(() => {
+        setDepartments([
+          { id: 6, name: 'Engineering' },
+          { id: 7, name: 'HR' },
+          { id: 8, name: 'Marketing' },
+          { id: 9, name: 'Finance' },
+        ])
+      })
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,7 +64,17 @@ export default function RegisterPage() {
           <UserPlus className="h-6 w-6 text-primary-foreground" />
         </div>
         <CardTitle className="text-2xl font-bold">Create account</CardTitle>
-        <CardDescription className="text-sm">Register as a new manager to get started</CardDescription>
+        <CardDescription className="text-sm">
+          {needsSetup
+            ? 'First registration — you will be the System Admin'
+            : 'Register as a new manager'}
+        </CardDescription>
+        {needsSetup && (
+          <div className="mt-3 flex items-center justify-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
+            <Shield className="h-4 w-4" />
+            First user setup: You'll get administrator privileges
+          </div>
+        )}
       </CardHeader>
       <CardContent className="pb-8 px-8">
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -139,7 +160,7 @@ export default function RegisterPage() {
                 Creating account...
               </span>
             ) : (
-              'Create account'
+              needsSetup ? 'Create Admin Account' : 'Create account'
             )}
           </Button>
 
