@@ -34,11 +34,18 @@ public class AuthService {
             throw new IllegalArgumentException("Email already registered");
         }
 
-        Department department = departmentRepository.findById(request.getDepartmentId())
-            .orElseThrow(() -> new IllegalArgumentException("Department not found"));
+        boolean hasAdmin = employeeRepository.existsByRole(Role.ADMIN);
+        Role role = hasAdmin ? Role.valueOf(request.getRole().toUpperCase()) : Role.ADMIN;
 
-        boolean isFirstUser = employeeRepository.count() == 0;
-        Role role = isFirstUser ? Role.ADMIN : Role.valueOf(request.getRole().toUpperCase());
+        Department department;
+        if (!hasAdmin) {
+            department = departmentRepository.findByName("General")
+                .orElseGet(() -> departmentRepository.save(
+                    Department.builder().name("General").build()));
+        } else {
+            department = departmentRepository.findById(request.getDepartmentId())
+                .orElseThrow(() -> new IllegalArgumentException("Department not found"));
+        }
 
         Employee employee = Employee.builder()
             .name(request.getName())

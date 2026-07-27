@@ -16,7 +16,7 @@ The Employee Leave Management System allows employees to apply for leave and man
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@company.com | admin123 |
+| Admin | (first registration — see First-Time Setup) |
 | Manager | alice@company.com | password123 |
 | Employee | charlie@company.com | password123 |
 
@@ -160,7 +160,8 @@ The Manager Dashboard displays:
 
 ### 1. Login
 
-- Login using admin credentials (admin@company.com / admin123)
+- Login using admin credentials (the first user who registered is the System Admin)
+- If starting from a fresh DB, see **First-Time Setup** in the Manager Guide above
 - You will be redirected to the Admin Dashboard
 
 ### 2. Admin Dashboard

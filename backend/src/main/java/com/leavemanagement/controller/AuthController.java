@@ -1,8 +1,7 @@
 package com.leavemanagement.controller;
 
-package com.leavemanagement.controller;
-
 import com.leavemanagement.dto.*;
+import com.leavemanagement.enums.Role;
 import com.leavemanagement.repository.EmployeeRepository;
 import com.leavemanagement.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,7 +28,7 @@ public class AuthController {
     @GetMapping("/setup")
     @Operation(summary = "Check if system needs initial setup")
     public ResponseEntity<?> checkSetup() {
-        boolean needsSetup = employeeRepository.count() == 0;
+        boolean needsSetup = !employeeRepository.existsByRole(Role.ADMIN);
         return ResponseEntity.ok(Map.of("needsSetup", needsSetup));
     }
 

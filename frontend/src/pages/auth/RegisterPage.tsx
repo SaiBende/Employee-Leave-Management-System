@@ -25,17 +25,16 @@ export default function RegisterPage() {
     api.get<{ needsSetup: boolean }>('/auth/setup')
       .then((res) => {
         setNeedsSetup(res.needsSetup)
-        if (!res.needsSetup) {
-          return api.get<{ success: boolean; data: Dept[] }>('/departments')
-            .then((res) => setDepartments(res.data))
-        }
+        return api.get<{ success: boolean; data: Dept[] }>('/departments')
       })
+      .then((res) => setDepartments(res.data))
       .catch(() => {
         setDepartments([
-          { id: 6, name: 'Engineering' },
-          { id: 7, name: 'HR' },
-          { id: 8, name: 'Marketing' },
-          { id: 9, name: 'Finance' },
+          { id: 1, name: 'Engineering' },
+          { id: 2, name: 'Human Resources' },
+          { id: 3, name: 'Marketing' },
+          { id: 4, name: 'Finance' },
+          { id: 5, name: 'Operations' },
         ])
       })
   }, [])
@@ -135,23 +134,25 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Department</label>
-            <div className="relative">
-              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-              <Select
-                className="pl-10"
-                value={form.departmentId}
-                onChange={(e) => setForm({ ...form, departmentId: Number(e.target.value) })}
-                required
-              >
-                <option value="">Select department</option>
-                {departments.map((d) => (
-                  <option key={d.id} value={d.id}>{d.name}</option>
-                ))}
-              </Select>
+          {!needsSetup && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Department</label>
+              <div className="relative">
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                <Select
+                  className="pl-10"
+                  value={form.departmentId}
+                  onChange={(e) => setForm({ ...form, departmentId: Number(e.target.value) })}
+                  required
+                >
+                  <option value="">Select department</option>
+                  {departments.map((d) => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
+                </Select>
+              </div>
             </div>
-          </div>
+          )}
 
           <Button type="submit" size="xl" className="w-full" disabled={loading}>
             {loading ? (
