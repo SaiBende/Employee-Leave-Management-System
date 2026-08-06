@@ -2,35 +2,19 @@ import { useEffect, useState } from 'react'
 import { api } from '@/api/client'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
-import type { ApiResponse, EmployeeResponse, ApiResponse as ApiResp } from '@/types'
-import { Users, Mail, Building2, Shield, Trash2, Edit3, X, Check } from 'lucide-react'
+import type { ApiResponse as ApiResp, EmployeeResponse } from '@/types'
+import { Users, Mail, Building2, Shield, Trash2, UserCog } from 'lucide-react'
 
 export default function AdminEmployees() {
   const [employees, setEmployees] = useState<EmployeeResponse[]>([])
-  const [departments, setDepartments] = useState<{ id: number; name: string }[]>([])
   const [loading, setLoading] = useState(true)
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [editForm, setEditForm] = useState({ name: '', email: '', role: '', departmentId: 0 })
 
   useEffect(() => {
-    Promise.all([
-      api.get<ApiResp<EmployeeResponse[]>>('/admin/employees'),
-      api.get<ApiResp<{ id: number; name: string }[]>>('/admin/departments'),
-    ])
-      .then(([empRes, deptRes]) => {
-        setEmployees(empRes.data)
-        setDepartments(deptRes.data)
-      })
+    api.get<ApiResp<EmployeeResponse[]>>('/admin/employees')
+      .then((res) => setEmployees(res.data))
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
-
-  const handleEdit = (emp: EmployeeResponse) => {
-    setEditForm({ name: emp.name, email: emp.email, role: emp.role, departmentId: 0 })
-    setEditingId(emp.id)
-  }
 
   const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this employee?')) return
@@ -41,6 +25,10 @@ export default function AdminEmployees() {
       alert(err instanceof Error ? err.message : 'Failed to delete')
     }
   }
+
+  const managers = employees.filter((e) => e.role === 'MANAGER')
+  const getReport = (managerId: number) => employees.filter((e) => e.managerId === managerId)
+  const unassigned = employees.filter((e) => e.role === 'EMPLOYEE' && !e.managerId)
 
   if (loading) {
     return (
@@ -53,56 +41,83 @@ export default function AdminEmployees() {
     )
   }
 
+  const EmployeeRow = ({ emp, isManager }: { emp: EmployeeResponse; isManager?: boolean }) => (
+    <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/50 hover:bg-secondary/50 transition-all">
+      <div className="flex items-center gap-4">
+        <div className={isManager ? "h-10 w-10 rounded-full bg-purple-500/20 border border-purple-300 flex items-center justify-center text-purple-700 font-semibold shadow-sm" : "h-10 w-10 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground font-semibold shadow-md"}>
+          {emp.name?.charAt(0)?.toUpperCase()}
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+            {emp.name}
+            {isManager && <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-purple-100 text-purple-700"><UserCog className="h-3 w-3" /> Manager</span>}
+          </p>
+          <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground flex-wrap">
+            <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {emp.email}</span>
+            <span className="flex items-center gap-1"><Building2 className="h-3 w-3" /> {emp.department}</span>
+            {emp.managerName && <span className="flex items-center gap-1"><UserCog className="h-3 w-3" /> Reports to: {emp.managerName}</span>}
+            <span className="flex items-center gap-1"><Shield className="h-3 w-3" /> {emp.role}</span>
+          </div>
+        </div>
+      </div>
+      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDelete(emp.id)}>
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
+  )
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground tracking-tight">Manage Employees</h1>
-        <p className="text-sm text-muted-foreground mt-1">View, edit, and remove all employees</p>
+        <p className="text-sm text-muted-foreground mt-1">View all managers, their team members, and who reports to whom</p>
       </div>
 
       <Card className="border-0 shadow-md overflow-hidden">
         <div className="h-1 w-full bg-gradient-to-r from-amber-400/40 via-orange-500/40 to-red-500/40" />
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>All Employees</CardTitle>
+            <CardTitle>Managers & Teams</CardTitle>
             <span className="text-xs text-muted-foreground bg-secondary px-3 py-1 rounded-full">
-              {employees.length} total
+              {employees.length} employees &middot; {managers.length} managers
             </span>
           </div>
         </CardHeader>
         <CardContent>
-          {employees.length === 0 ? (
+          {managers.length === 0 ? (
             <div className="text-center py-12">
               <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
               <p className="text-sm text-muted-foreground">No employees found</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {employees.map((emp) => (
-                <div key={emp.id} className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/50 hover:bg-secondary/50 transition-all">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground font-semibold shadow-md">
-                      {emp.name?.charAt(0)?.toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{emp.name}</p>
-                      <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {emp.email}</span>
-                        <span className="flex items-center gap-1"><Building2 className="h-3 w-3" /> {emp.department}</span>
-                        <span className="flex items-center gap-1"><Shield className="h-3 w-3" /> {emp.role}</span>
+            <div className="space-y-5">
+              {managers.map((mgr) => {
+                const reports = getReport(mgr.id)
+                return (
+                  <div key={mgr.id} className="space-y-2">
+                    <EmployeeRow emp={mgr} isManager />
+                    {reports.length > 0 && (
+                      <div className="ml-8 space-y-2 border-l-2 border-border/60 pl-4">
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                          Team ({reports.length})
+                        </p>
+                        {reports.map((r) => <EmployeeRow key={r.id} emp={r} />)}
                       </div>
-                    </div>
+                    )}
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => handleEdit(emp)}>
-                      <Edit3 className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDelete(emp.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                )
+              })}
+
+              {unassigned.length > 0 && (
+                <div className="space-y-2 pt-2 border-t border-border/50">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                    Employees without manager ({unassigned.length})
+                  </p>
+                  <div className="space-y-2">
+                    {unassigned.map((e) => <EmployeeRow key={e.id} emp={e} />)}
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           )}
         </CardContent>

@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '@/api/client'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import type { ApiResponse, LeaveBalance } from '@/types'
-import { Coins, TrendingUp } from 'lucide-react'
 
 export default function MyBalances() {
   const [balances, setBalances] = useState<LeaveBalance[]>([])

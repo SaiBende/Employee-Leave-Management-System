@@ -1,7 +1,7 @@
 package com.leavemanagement.controller;
 
 import com.leavemanagement.dto.ApiResponse;
-import com.leavemanagement.entity.Department;
+import com.leavemanagement.dto.DepartmentResponse;
 import com.leavemanagement.repository.DepartmentRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +26,8 @@ public class DepartmentController {
     @GetMapping
     @Operation(summary = "Get all departments")
     public ResponseEntity<?> getAllDepartments() {
-        List<Department> departments = departmentRepository.findAll();
+        List<DepartmentResponse> departments = departmentRepository.findAll().stream()
+            .map(DepartmentResponse::from).toList();
         return ResponseEntity.ok(new ApiResponse(true, "Success", departments));
     }
 }

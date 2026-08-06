@@ -3,7 +3,7 @@ import { api } from '@/api/client'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import type { ApiResponse, ApiResponse as ApiResp } from '@/types'
+import type { ApiResponse as ApiResp } from '@/types'
 import { Building2, Plus, Trash2 } from 'lucide-react'
 
 export default function AdminDepartments() {

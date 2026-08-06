@@ -28,6 +28,16 @@ export interface LeaveRequest {
   reason: string
 }
 
+export interface LeaveComment {
+  id: number
+  leaveId: number
+  authorId: number
+  authorName: string
+  authorRole: 'ADMIN' | 'MANAGER' | 'EMPLOYEE'
+  comment: string
+  createdAt: string
+}
+
 export interface LeaveResponse {
   id: number
   employeeId: number
@@ -40,6 +50,7 @@ export interface LeaveResponse {
   managerComments: string | null
   createdAt: string
   updatedAt: string
+  comments?: LeaveComment[]
 }
 
 export interface EmployeeResponse {

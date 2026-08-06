@@ -2,6 +2,8 @@
 -- PostgreSQL 16
 
 -- Drop tables if they exist (for dev reset)
+DROP TABLE IF EXISTS leave_comments CASCADE;
+DROP TABLE IF EXISTS leave_balances CASCADE;
 DROP TABLE IF EXISTS leaves CASCADE;
 DROP TABLE IF EXISTS employees CASCADE;
 DROP TABLE IF EXISTS departments CASCADE;
@@ -100,6 +102,24 @@ CREATE TABLE leave_balances (
 
 CREATE INDEX idx_leave_balances_employee ON leave_balances(employee_id);
 CREATE INDEX idx_leave_balances_year ON leave_balances(year);
+
+-- ============================
+-- LEAVE COMMENTS
+-- ============================
+CREATE TABLE leave_comments (
+    id BIGSERIAL PRIMARY KEY,
+    leave_id BIGINT NOT NULL,
+    author_id BIGINT NOT NULL,
+    comment TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_comment_leave FOREIGN KEY (leave_id)
+        REFERENCES leaves(id) ON DELETE CASCADE,
+    CONSTRAINT fk_comment_author FOREIGN KEY (author_id)
+        REFERENCES employees(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_leave_comments_leave ON leave_comments(leave_id);
 
 -- ============================
 -- TRIGGER: auto-update updated_at

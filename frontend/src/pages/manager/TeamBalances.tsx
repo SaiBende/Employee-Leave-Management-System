@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { ApiResponse, LeaveBalance } from '@/types'
-import { Coins, Save, X, ChevronDown, ChevronUp, Users } from 'lucide-react'
+import { Coins, Save, X, ChevronDown, ChevronUp } from 'lucide-react'
 
 export default function TeamBalances() {
   const [balances, setBalances] = useState<LeaveBalance[]>([])
@@ -72,7 +72,6 @@ export default function TeamBalances() {
       ) : (
         <div className="space-y-4">
           {Object.entries(grouped).map(([empKey, empBalances]) => {
-            const empName = empBalances[0].employeeName
             const isExpanded = expandedEmployee === empBalances[0].employeeId
             return (
               <Card key={empKey} className="border-0 shadow-md overflow-hidden">

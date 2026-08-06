@@ -1,14 +1,17 @@
 package com.leavemanagement.service;
 
 import com.leavemanagement.dto.ApiResponse;
+import com.leavemanagement.dto.LeaveCommentResponse;
 import com.leavemanagement.dto.LeaveRequest;
 import com.leavemanagement.dto.LeaveResponse;
 import com.leavemanagement.entity.Employee;
 import com.leavemanagement.entity.Leave;
+import com.leavemanagement.entity.LeaveComment;
 import com.leavemanagement.enums.LeaveStatus;
 import com.leavemanagement.enums.LeaveType;
 import com.leavemanagement.enums.Role;
 import com.leavemanagement.repository.EmployeeRepository;
+import com.leavemanagement.repository.LeaveCommentRepository;
 import com.leavemanagement.repository.LeaveRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +22,14 @@ public class LeaveService {
 
     private final LeaveRepository leaveRepository;
     private final EmployeeRepository employeeRepository;
+    private final LeaveCommentRepository commentRepository;
 
     public LeaveService(LeaveRepository leaveRepository,
-                        EmployeeRepository employeeRepository) {
+                        EmployeeRepository employeeRepository,
+                        LeaveCommentRepository commentRepository) {
         this.leaveRepository = leaveRepository;
         this.employeeRepository = employeeRepository;
+        this.commentRepository = commentRepository;
     }
 
     public LeaveResponse apply(LeaveRequest request, Employee employee) {
@@ -113,6 +119,24 @@ public class LeaveService {
         return leaves.stream().map(this::toResponse).toList();
     }
 
+    public List<LeaveResponse> getCalendarLeaves(Employee employee) {
+        List<Leave> leaves;
+
+        switch (employee.getRole()) {
+            case ADMIN -> leaves = leaveRepository.findAll();
+            case MANAGER -> {
+                List<Long> teamIds = employeeRepository.findByManagerId(employee.getId())
+                    .stream().map(Employee::getId).toList();
+                leaves = teamIds.isEmpty()
+                    ? List.of()
+                    : leaveRepository.findByEmployeeIdIn(teamIds);
+            }
+            default -> leaves = leaveRepository.findByEmployeeIdOrderByCreatedAtDesc(employee.getId());
+        }
+
+        return leaves.stream().map(this::toResponse).toList();
+    }
+
     public List<LeaveResponse> getEmployeeLeaves(Long employeeId, Employee currentUser) {
         Employee target = employeeRepository.findById(employeeId)
             .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
@@ -132,6 +156,45 @@ public class LeaveService {
             && employee.getManager().getId().equals(manager.getId());
     }
 
+    public LeaveCommentResponse addComment(Long leaveId, String comment, Employee actor) {
+        if (comment == null || comment.isBlank()) {
+            throw new IllegalArgumentException("Comment cannot be empty");
+        }
+
+        Leave leave = leaveRepository.findById(leaveId)
+            .orElseThrow(() -> new IllegalArgumentException("Leave not found"));
+
+        if (!canAccess(leave, actor)) {
+            throw new SecurityException("Access denied");
+        }
+
+        LeaveComment saved = commentRepository.save(LeaveComment.builder()
+            .leave(leave)
+            .author(actor)
+            .comment(comment.trim())
+            .build());
+        return LeaveCommentResponse.from(saved);
+    }
+
+    public void addSystemComment(Leave leave, String comment, Employee author) {
+        commentRepository.save(LeaveComment.builder()
+            .leave(leave)
+            .author(author)
+            .comment(comment)
+            .build());
+    }
+
+    private boolean canAccess(Leave leave, Employee actor) {
+        return actor.getRole() == Role.ADMIN
+            || leave.getEmployee().getId().equals(actor.getId())
+            || isManagerOf(actor, leave.getEmployee());
+    }
+
+    private List<LeaveCommentResponse> getComments(Long leaveId) {
+        return commentRepository.findByLeaveIdOrderByCreatedAtAsc(leaveId)
+            .stream().map(LeaveCommentResponse::from).toList();
+    }
+
     private LeaveResponse toResponse(Leave leave) {
         return LeaveResponse.builder()
             .id(leave.getId())
@@ -145,6 +208,7 @@ public class LeaveService {
             .managerComments(leave.getManagerComments())
             .createdAt(leave.getCreatedAt())
             .updatedAt(leave.getUpdatedAt())
+            .comments(getComments(leave.getId()))
             .build();
     }
 }

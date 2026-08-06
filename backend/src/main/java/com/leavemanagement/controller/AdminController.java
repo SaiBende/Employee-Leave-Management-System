@@ -2,8 +2,8 @@ package com.leavemanagement.controller;
 
 import com.leavemanagement.dto.ApiResponse;
 import com.leavemanagement.dto.DashboardResponse;
+import com.leavemanagement.dto.DepartmentResponse;
 import com.leavemanagement.dto.EmployeeResponse;
-import com.leavemanagement.entity.Department;
 import com.leavemanagement.entity.Employee;
 import com.leavemanagement.security.CurrentUser;
 import com.leavemanagement.service.AdminService;
@@ -43,7 +43,7 @@ public class AdminController {
     @GetMapping("/departments")
     @Operation(summary = "Get all departments")
     public ResponseEntity<?> getAllDepartments(@CurrentUser Employee employee) {
-        List<Department> departments = adminService.getAllDepartments();
+        List<DepartmentResponse> departments = adminService.getAllDepartments();
         return ResponseEntity.ok(new ApiResponse(true, "Success", departments));
     }
 
@@ -52,7 +52,7 @@ public class AdminController {
     public ResponseEntity<?> createDepartment(@RequestBody Map<String, String> body,
                                                @CurrentUser Employee employee) {
         try {
-            Department dept = adminService.createDepartment(body.get("name"));
+            DepartmentResponse dept = adminService.createDepartment(body.get("name"));
             return ResponseEntity.ok(new ApiResponse(true, "Department created", dept));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()

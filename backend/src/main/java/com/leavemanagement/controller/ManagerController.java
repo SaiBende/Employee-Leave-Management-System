@@ -29,9 +29,9 @@ public class ManagerController {
     }
 
     @GetMapping("/pending-leaves")
-    @Operation(summary = "View all pending leave requests from team")
+    @Operation(summary = "View pending leave requests (team for manager, org-wide for admin)")
     public ResponseEntity<?> getPendingLeaves(@CurrentUser Employee employee) {
-        requireManager(employee);
+        requireApprover(employee);
         List<LeaveResponse> leaves = managerService.getPendingLeaves(employee);
         return ResponseEntity.ok(new ApiResponse(true, "Success", leaves));
     }
@@ -39,10 +39,12 @@ public class ManagerController {
     @PutMapping("/leaves/{id}/approve")
     @Operation(summary = "Approve a pending leave request")
     public ResponseEntity<?> approveLeave(@PathVariable Long id,
+                                           @RequestBody(required = false) Map<String, String> body,
                                            @CurrentUser Employee employee) {
-        requireManager(employee);
+        requireApprover(employee);
         try {
-            LeaveResponse leave = managerService.approveLeave(id, employee);
+            String comment = body != null ? body.getOrDefault("comment", "") : "";
+            LeaveResponse leave = managerService.approveLeave(id, comment, employee);
             return ResponseEntity.ok(new ApiResponse(true, "Leave approved", leave));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
@@ -55,10 +57,11 @@ public class ManagerController {
     public ResponseEntity<?> rejectLeave(@PathVariable Long id,
                                           @RequestBody Map<String, String> body,
                                           @CurrentUser Employee employee) {
-        requireManager(employee);
+        requireApprover(employee);
         try {
-            String comments = body.getOrDefault("comments", "");
-            LeaveResponse leave = managerService.rejectLeave(id, comments, employee);
+            String comment = body.getOrDefault("comment",
+                              body.getOrDefault("comments", ""));
+            LeaveResponse leave = managerService.rejectLeave(id, comment, employee);
             return ResponseEntity.ok(new ApiResponse(true, "Leave rejected", leave));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
@@ -91,6 +94,12 @@ public class ManagerController {
     private void requireManager(Employee employee) {
         if (employee.getRole() != Role.MANAGER) {
             throw new AccessDeniedException("Manager access required");
+        }
+    }
+
+    private void requireApprover(Employee employee) {
+        if (employee.getRole() != Role.MANAGER && employee.getRole() != Role.ADMIN) {
+            throw new AccessDeniedException("Manager or admin access required");
         }
     }
 }

@@ -12,6 +12,7 @@ import LeaveDetails from '@/pages/employee/LeaveDetails'
 import EditLeave from '@/pages/employee/EditLeave'
 import Profile from '@/pages/employee/Profile'
 import MyBalances from '@/pages/employee/MyBalances'
+import Calendar from '@/pages/Calendar'
 import ManagerDashboard from '@/pages/manager/ManagerDashboard'
 import PendingApprovals from '@/pages/manager/PendingApprovals'
 import TeamMembers from '@/pages/manager/TeamMembers'
@@ -19,6 +20,7 @@ import AddEmployee from '@/pages/manager/AddEmployee'
 import EmployeeLeaveHistory from '@/pages/manager/EmployeeLeaveHistory'
 import TeamBalances from '@/pages/manager/TeamBalances'
 import AdminDashboard from '@/pages/admin/AdminDashboard'
+import AdminApprovals from '@/pages/admin/AdminApprovals'
 import AdminEmployees from '@/pages/admin/AdminEmployees'
 import AdminDepartments from '@/pages/admin/AdminDepartments'
 import AdminAddEmployee from '@/pages/admin/AdminAddEmployee'
@@ -102,6 +104,7 @@ export default function App() {
             <Route path="/employee/leaves/:id/edit" element={<EditLeave />} />
             <Route path="/employee/profile" element={<Profile />} />
             <Route path="/employee/balances" element={<MyBalances />} />
+            <Route path="/calendar" element={<Calendar />} />
           </Route>
 
           <Route element={<ProtectedRoute allowedRole="MANAGER"><AppLayout /></ProtectedRoute>}>
@@ -115,6 +118,7 @@ export default function App() {
 
           <Route element={<ProtectedRoute allowedRole="ADMIN"><AppLayout /></ProtectedRoute>}>
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/pending" element={<AdminApprovals />} />
             <Route path="/admin/employees" element={<AdminEmployees />} />
             <Route path="/admin/departments" element={<AdminDepartments />} />
             <Route path="/admin/employees/add" element={<AdminAddEmployee />} />

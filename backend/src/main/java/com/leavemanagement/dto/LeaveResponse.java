@@ -3,6 +3,7 @@ package com.leavemanagement.dto;
 import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class LeaveResponse {
@@ -17,4 +18,5 @@ public class LeaveResponse {
     private String managerComments;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private List<LeaveCommentResponse> comments;
 }

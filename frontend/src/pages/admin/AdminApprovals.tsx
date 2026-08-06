@@ -3,11 +3,12 @@ import { api } from '@/api/client'
 import { StatusBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import type { ApiResponse, LeaveResponse } from '@/types'
-import { CheckCircle2, XCircle, MessageSquare, Clock } from 'lucide-react'
+import type { ApiResponse, LeaveResponse, EmployeeResponse } from '@/types'
+import { CheckCircle2, XCircle, MessageSquare, Clock, Users } from 'lucide-react'
 
-export default function PendingApprovals() {
+export default function AdminApprovals() {
   const [leaves, setLeaves] = useState<LeaveResponse[]>([])
+  const [managerByEmp, setManagerByEmp] = useState<Record<number, string>>({})
   const [loading, setLoading] = useState(true)
   const [commentInput, setCommentInput] = useState<Record<number, string>>({})
 
@@ -18,7 +19,22 @@ export default function PendingApprovals() {
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { fetchPending() }, [])
+  useEffect(() => {
+    Promise.all([
+      api.get<ApiResponse<LeaveResponse[]>>('/manager/pending-leaves'),
+      api.get<ApiResponse<EmployeeResponse[]>>('/admin/employees'),
+    ])
+      .then(([leaveRes, empRes]) => {
+        setLeaves(leaveRes.data)
+        const map: Record<number, string> = {}
+        for (const emp of empRes.data) {
+          if (emp.managerName) map[emp.id] = emp.managerName
+        }
+        setManagerByEmp(map)
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
 
   const handleApprove = async (id: number) => {
     const comment = commentInput[id] || ''
@@ -55,14 +71,14 @@ export default function PendingApprovals() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground tracking-tight">Pending Approvals</h1>
-        <p className="text-sm text-muted-foreground mt-1">Review and respond to leave requests from your team</p>
+        <p className="text-sm text-muted-foreground mt-1">Review and respond to leave requests across the organization</p>
       </div>
 
       <Card className="border-0 shadow-md overflow-hidden">
         <div className="h-1 w-full bg-gradient-to-r from-amber-500/40 via-orange-500/40 to-red-500/40" />
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Pending Requests</CardTitle>
+            <CardTitle>Org-Wide Pending Requests</CardTitle>
             <span className="text-xs text-muted-foreground bg-amber-100 text-amber-700 px-3 py-1 rounded-full font-medium flex items-center gap-1">
               <Clock className="h-3 w-3" />
               {leaves.length} pending
@@ -89,6 +105,10 @@ export default function PendingApprovals() {
                         <p className="text-sm font-semibold text-foreground">{leave.employeeName}</p>
                         <p className="text-xs text-muted-foreground">
                           {leave.leaveType} &middot; {leave.startDate} to {leave.endDate}
+                        </p>
+                        <p className="text-xs text-muted-foreground/70 mt-0.5 flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          Manager: {managerByEmp[leave.employeeId] || '—'}
                         </p>
                       </div>
                     </div>

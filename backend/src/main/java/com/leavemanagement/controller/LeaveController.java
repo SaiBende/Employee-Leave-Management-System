@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/leaves")
@@ -40,6 +41,13 @@ public class LeaveController {
     @Operation(summary = "Get my leave history")
     public ResponseEntity<?> getMyLeaves(@CurrentUser Employee employee) {
         List<LeaveResponse> leaves = leaveService.getMyLeaves(employee);
+        return ResponseEntity.ok(new ApiResponse(true, "Success", leaves));
+    }
+
+    @GetMapping("/calendar")
+    @Operation(summary = "Get all leaves for the calendar view (own, team, or org-wide based on role)")
+    public ResponseEntity<?> getCalendarLeaves(@CurrentUser Employee employee) {
+        List<LeaveResponse> leaves = leaveService.getCalendarLeaves(employee);
         return ResponseEntity.ok(new ApiResponse(true, "Success", leaves));
     }
 
@@ -77,6 +85,21 @@ public class LeaveController {
         try {
             ApiResponse response = leaveService.cancelLeave(id, employee);
             return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, e.getMessage(), null));
+        }
+    }
+
+    @PostMapping("/{id}/comments")
+    @Operation(summary = "Add a comment to a leave request")
+    public ResponseEntity<?> addComment(@PathVariable Long id,
+                                         @RequestBody Map<String, String> body,
+                                         @CurrentUser Employee employee) {
+        try {
+            LeaveCommentResponse comment = leaveService.addComment(
+                id, body.getOrDefault("comment", ""), employee);
+            return ResponseEntity.ok(new ApiResponse(true, "Comment added", comment));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, e.getMessage(), null));

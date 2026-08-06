@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/departments").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/manager/**").hasRole("MANAGER")
+                .requestMatchers("/api/manager/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/api/dashboard/manager").hasRole("MANAGER")
                 .requestMatchers(HttpMethod.GET, "/api/leave-balances/me").hasAnyRole("ADMIN", "MANAGER", "EMPLOYEE")
                 .requestMatchers("/api/leave-balances/**").hasAnyRole("ADMIN", "MANAGER")

@@ -3,7 +3,7 @@ import { useAuth } from '@/context/AuthContext'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Users, LogOut, User, FileText, Clock,
-  CalendarPlus, ChevronLeft, Menu, CheckSquare, Building2, Coins, UserPlus
+  CalendarPlus, CalendarDays, ChevronLeft, Menu, CheckSquare, Building2, Coins, UserPlus
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -11,6 +11,7 @@ const employeeNav = [
   { to: '/employee/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/employee/leaves/apply', label: 'Apply Leave', icon: CalendarPlus },
   { to: '/employee/leaves', label: 'Leave History', icon: Clock },
+  { to: '/calendar', label: 'Calendar', icon: CalendarDays },
   { to: '/employee/balances', label: 'Leave Balances', icon: Coins },
   { to: '/employee/profile', label: 'Profile', icon: User },
 ]
@@ -21,14 +22,17 @@ const managerNav = [
   { to: '/manager/employees', label: 'My Team', icon: Users },
   { to: '/manager/employees/add', label: 'Add Employee', icon: User },
   { to: '/manager/balances', label: 'Leave Balances', icon: Coins },
+  { to: '/calendar', label: 'Calendar', icon: CalendarDays },
   { to: '/employee/profile', label: 'Profile', icon: Building2 },
 ]
 
 const adminNav = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/admin/pending', label: 'Pending Approvals', icon: CheckSquare },
   { to: '/admin/employees', label: 'All Employees', icon: Users },
   { to: '/admin/employees/add', label: 'Add Employee', icon: UserPlus },
   { to: '/admin/departments', label: 'Departments', icon: Building2 },
+  { to: '/calendar', label: 'Calendar', icon: CalendarDays },
   { to: '/employee/profile', label: 'Profile', icon: User },
 ]
 

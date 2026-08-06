@@ -8,6 +8,7 @@ import com.leavemanagement.enums.LeaveStatus;
 import com.leavemanagement.enums.Role;
 import com.leavemanagement.repository.EmployeeRepository;
 import com.leavemanagement.repository.LeaveBalanceRepository;
+import com.leavemanagement.repository.LeaveCommentRepository;
 import com.leavemanagement.repository.LeaveRepository;
 import org.springframework.stereotype.Service;
 
@@ -20,42 +21,49 @@ public class ManagerService {
     private final LeaveRepository leaveRepository;
     private final EmployeeRepository employeeRepository;
     private final LeaveBalanceRepository leaveBalanceRepository;
+    private final LeaveCommentRepository commentRepository;
 
     public ManagerService(LeaveRepository leaveRepository,
                           EmployeeRepository employeeRepository,
-                          LeaveBalanceRepository leaveBalanceRepository) {
+                          LeaveBalanceRepository leaveBalanceRepository,
+                          LeaveCommentRepository commentRepository) {
         this.leaveRepository = leaveRepository;
         this.employeeRepository = employeeRepository;
         this.leaveBalanceRepository = leaveBalanceRepository;
+        this.commentRepository = commentRepository;
     }
 
-    public List<LeaveResponse> getPendingLeaves(Employee manager) {
-        List<Employee> team = employeeRepository.findByManagerId(manager.getId());
-        List<Long> teamIds = team.stream().map(Employee::getId).toList();
+    public List<LeaveResponse> getPendingLeaves(Employee actor) {
+        List<Leave> pending = leaveRepository.findByStatusOrderByCreatedAtDesc(LeaveStatus.PENDING);
 
-        return leaveRepository.findByStatusOrderByCreatedAtDesc(LeaveStatus.PENDING)
-            .stream()
+        if (actor.getRole() == Role.ADMIN) {
+            return pending.stream().map(this::toResponse).toList();
+        }
+
+        List<Long> teamIds = employeeRepository.findByManagerId(actor.getId())
+            .stream().map(Employee::getId).toList();
+
+        return pending.stream()
             .filter(l -> teamIds.contains(l.getEmployee().getId()))
             .map(this::toResponse)
             .toList();
     }
 
-    public LeaveResponse approveLeave(Long leaveId, Employee manager) {
+    public LeaveResponse approveLeave(Long leaveId, String comment, Employee actor) {
         Leave leave = leaveRepository.findById(leaveId)
             .orElseThrow(() -> new IllegalArgumentException("Leave not found"));
 
         if (leave.getStatus() != LeaveStatus.PENDING) {
             throw new IllegalArgumentException("Leave is not in pending state");
         }
-
-        if (!isTeamMember(manager, leave.getEmployee())) {
-            throw new SecurityException("This leave does not belong to your team");
-        }
+        ensureCanDecide(actor, leave);
 
         leave.setStatus(LeaveStatus.APPROVED);
+        leave.setManagerComments(comment);
         leave = leaveRepository.save(leave);
 
         deductBalance(leave);
+        addComment(leave, actor, "APPROVED" + (comment != null && !comment.isBlank() ? " - " + comment.trim() : ""));
         return toResponse(leave);
     }
 
@@ -71,22 +79,38 @@ public class ManagerService {
         }
     }
 
-    public LeaveResponse rejectLeave(Long leaveId, String comments, Employee manager) {
+    public LeaveResponse rejectLeave(Long leaveId, String comments, Employee actor) {
         Leave leave = leaveRepository.findById(leaveId)
             .orElseThrow(() -> new IllegalArgumentException("Leave not found"));
 
         if (leave.getStatus() != LeaveStatus.PENDING) {
             throw new IllegalArgumentException("Leave is not in pending state");
         }
-
-        if (!isTeamMember(manager, leave.getEmployee())) {
-            throw new SecurityException("This leave does not belong to your team");
-        }
+        ensureCanDecide(actor, leave);
 
         leave.setStatus(LeaveStatus.REJECTED);
         leave.setManagerComments(comments);
         leave = leaveRepository.save(leave);
+
+        addComment(leave, actor, "REJECTED" + (comments != null && !comments.isBlank() ? " - " + comments.trim() : ""));
         return toResponse(leave);
+    }
+
+    private void ensureCanDecide(Employee actor, Leave leave) {
+        if (actor.getRole() == Role.ADMIN) {
+            return;
+        }
+        if (!isTeamMember(actor, leave.getEmployee())) {
+            throw new SecurityException("This leave does not belong to your team");
+        }
+    }
+
+    private void addComment(Leave leave, Employee author, String comment) {
+        commentRepository.save(com.leavemanagement.entity.LeaveComment.builder()
+            .leave(leave)
+            .author(author)
+            .comment(comment)
+            .build());
     }
 
     public List<EmployeeResponse> getMyEmployees(Employee manager) {
@@ -107,6 +131,8 @@ public class ManagerService {
             .managerComments(leave.getManagerComments())
             .createdAt(leave.getCreatedAt())
             .updatedAt(leave.getUpdatedAt())
+            .comments(commentRepository.findByLeaveIdOrderByCreatedAtAsc(leave.getId())
+                .stream().map(LeaveCommentResponse::from).toList())
             .build();
     }
 

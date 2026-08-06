@@ -12,13 +12,25 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   }
 
   const res = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers })
-  const data = await res.json()
 
-  if (!res.ok) {
-    throw new Error(data.message || 'Request failed')
+  let data: { message?: string } | null = null
+  try {
+    data = await res.json()
+  } catch {
+    // empty or non-JSON body (e.g. 401/403 from Spring Security)
   }
 
-  return data
+  if (!res.ok) {
+    const isAuthError = res.status === 401 || (res.status === 403 && !data)
+    if (isAuthError) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      window.location.href = '/login'
+    }
+    throw new Error(data?.message || `Request failed (${res.status} ${res.statusText})`)
+  }
+
+  return data as T
 }
 
 export const api = {

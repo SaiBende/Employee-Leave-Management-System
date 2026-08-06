@@ -1,6 +1,7 @@
 package com.leavemanagement.service;
 
 import com.leavemanagement.dto.DashboardResponse;
+import com.leavemanagement.dto.DepartmentResponse;
 import com.leavemanagement.dto.EmployeeResponse;
 import com.leavemanagement.dto.LeaveResponse;
 import com.leavemanagement.entity.Department;
@@ -60,15 +61,16 @@ public class AdminService {
             .map(this::toEmployeeResponse).toList();
     }
 
-    public List<Department> getAllDepartments() {
-        return departmentRepository.findAll();
+    public List<DepartmentResponse> getAllDepartments() {
+        return departmentRepository.findAll().stream()
+            .map(DepartmentResponse::from).toList();
     }
 
-    public Department createDepartment(String name) {
+    public DepartmentResponse createDepartment(String name) {
         if (departmentRepository.findByName(name).isPresent()) {
             throw new IllegalArgumentException("Department already exists");
         }
-        return departmentRepository.save(Department.builder().name(name).build());
+        return DepartmentResponse.from(departmentRepository.save(Department.builder().name(name).build()));
     }
 
     public void deleteDepartment(Long id) {
