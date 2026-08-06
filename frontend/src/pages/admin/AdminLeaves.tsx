@@ -4,6 +4,7 @@ import { api } from '@/api/client'
 import { StatusBadge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import LeaveCommentThread from '@/components/LeaveCommentThread'
+import ApproverNote from '@/components/ApproverNote'
 import type { ApiResponse, LeaveResponse } from '@/types'
 import { Clock, MessageSquare } from 'lucide-react'
 
@@ -88,6 +89,7 @@ export default function AdminLeaves() {
                       <p className="text-xs text-muted-foreground/70">
                         {leave.startDate} to {leave.endDate}
                       </p>
+                      <ApproverNote leave={leave} />
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="text-[10px] text-muted-foreground flex items-center gap-1">

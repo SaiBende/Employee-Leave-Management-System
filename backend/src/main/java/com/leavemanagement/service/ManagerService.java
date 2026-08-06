@@ -60,6 +60,8 @@ public class ManagerService {
 
         leave.setStatus(LeaveStatus.APPROVED);
         leave.setManagerComments(comment);
+        leave.setDecidedBy(actor);
+        leave.setDecidedAt(java.time.LocalDateTime.now());
         leave = leaveRepository.save(leave);
 
         deductBalance(leave);
@@ -90,6 +92,8 @@ public class ManagerService {
 
         leave.setStatus(LeaveStatus.REJECTED);
         leave.setManagerComments(comments);
+        leave.setDecidedBy(actor);
+        leave.setDecidedAt(java.time.LocalDateTime.now());
         leave = leaveRepository.save(leave);
 
         addComment(leave, actor, "REJECTED" + (comments != null && !comments.isBlank() ? " - " + comments.trim() : ""));
@@ -129,6 +133,9 @@ public class ManagerService {
             .reason(leave.getReason())
             .status(leave.getStatus().name())
             .managerComments(leave.getManagerComments())
+            .decidedById(leave.getDecidedBy() != null ? leave.getDecidedBy().getId() : null)
+            .decidedByName(leave.getDecidedBy() != null ? leave.getDecidedBy().getName() : null)
+            .decidedAt(leave.getDecidedAt())
             .createdAt(leave.getCreatedAt())
             .updatedAt(leave.getUpdatedAt())
             .comments(commentRepository.findByLeaveIdOrderByCreatedAtAsc(leave.getId())

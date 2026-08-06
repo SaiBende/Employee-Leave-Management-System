@@ -48,6 +48,9 @@ export interface LeaveResponse {
   reason: string
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
   managerComments: string | null
+  decidedById?: number | null
+  decidedByName?: string | null
+  decidedAt?: string | null
   createdAt: string
   updatedAt: string
   comments?: LeaveComment[]

@@ -40,6 +40,13 @@ public class Leave {
     @Column(name = "manager_comments", columnDefinition = "TEXT")
     private String managerComments;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "decided_by_id")
+    private Employee decidedBy;
+
+    @Column(name = "decided_at")
+    private LocalDateTime decidedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

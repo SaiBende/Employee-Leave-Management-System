@@ -5,6 +5,7 @@ import { api } from '@/api/client'
 import { StatusBadge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import LeaveCommentThread from '@/components/LeaveCommentThread'
+import ApproverNote from '@/components/ApproverNote'
 import type { ApiResponse, LeaveResponse } from '@/types'
 import { ArrowLeft, Clock, MessageSquare } from 'lucide-react'
 
@@ -76,6 +77,7 @@ export default function EmployeeLeaveHistory() {
                       <p className="text-xs text-muted-foreground">
                         {leave.leaveType} &middot; {leave.startDate} to {leave.endDate}
                       </p>
+                      <ApproverNote leave={leave} />
                       {leave.managerComments && (
                         <p className="text-xs text-muted-foreground mt-2 p-2 rounded-lg bg-amber-50 border border-amber-100 italic">
                           Comment: {leave.managerComments}

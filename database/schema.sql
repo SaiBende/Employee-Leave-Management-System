@@ -69,11 +69,15 @@ CREATE TABLE leaves (
     reason TEXT NOT NULL,
     status leave_status NOT NULL DEFAULT 'PENDING',
     manager_comments TEXT,
+    decided_by_id BIGINT,
+    decided_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
 
     CONSTRAINT fk_leave_employee FOREIGN KEY (employee_id)
         REFERENCES employees(id) ON DELETE CASCADE,
+    CONSTRAINT fk_leave_decided_by FOREIGN KEY (decided_by_id)
+        REFERENCES employees(id) ON DELETE SET NULL,
     CONSTRAINT chk_date_range CHECK (end_date >= start_date)
 );
 

@@ -107,12 +107,20 @@ export default function LeaveDetails() {
             </div>
           </div>
 
-          {leave.managerComments && (
+          {(leave.managerComments || leave.decidedByName) && (
             <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Decision Note</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Decision</p>
               <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200">
                 <MessageSquare className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                <p className="text-sm text-amber-800">{leave.managerComments}</p>
+                <div>
+                  {leave.managerComments && <p className="text-sm text-amber-800">{leave.managerComments}</p>}
+                  {leave.decidedByName && (
+                    <p className="text-[11px] text-amber-700/80 mt-1">
+                      {leave.status === 'APPROVED' ? 'Approved' : 'Rejected'} by {leave.decidedByName}
+                      {leave.decidedAt && <> &middot; {new Date(leave.decidedAt).toLocaleDateString()}</>}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           )}

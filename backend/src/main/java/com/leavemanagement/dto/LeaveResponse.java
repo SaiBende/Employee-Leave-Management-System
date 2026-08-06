@@ -16,6 +16,9 @@ public class LeaveResponse {
     private String reason;
     private String status;
     private String managerComments;
+    private Long decidedById;
+    private String decidedByName;
+    private LocalDateTime decidedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<LeaveCommentResponse> comments;

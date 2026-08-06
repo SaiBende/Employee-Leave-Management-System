@@ -5,6 +5,7 @@ import { StatusBadge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
+import ApproverNote from '@/components/ApproverNote'
 import type { ApiResponse, LeaveResponse } from '@/types'
 import { Eye, Search, X, Clock, Filter } from 'lucide-react'
 
@@ -138,6 +139,7 @@ export default function LeaveHistory() {
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {leave.leaveType} &middot; {leave.startDate} to {leave.endDate}
                     </p>
+                    <ApproverNote leave={leave} />
                   </div>
                   <div className="flex items-center gap-3 ml-4 shrink-0">
                     <StatusBadge status={leave.status} />

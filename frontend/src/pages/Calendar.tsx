@@ -3,6 +3,7 @@ import { api } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { StatusBadge } from '@/components/ui/badge'
+import ApproverNote from '@/components/ApproverNote'
 import { cn } from '@/lib/utils'
 import type { ApiResponse, LeaveResponse } from '@/types'
 import { CalendarDays, ChevronLeft, ChevronRight, CalendarClock } from 'lucide-react'
@@ -208,6 +209,7 @@ export default function Calendar() {
                           {leave.leaveType.charAt(0) + leave.leaveType.slice(1).toLowerCase()} &middot; {leave.startDate} to {leave.endDate}
                         </p>
                         <p className="text-xs text-muted-foreground/80 line-clamp-2">{leave.reason}</p>
+                        <ApproverNote leave={leave} />
                       </div>
                     ))}
                   </div>
