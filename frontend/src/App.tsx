@@ -21,6 +21,7 @@ import EmployeeLeaveHistory from '@/pages/manager/EmployeeLeaveHistory'
 import TeamBalances from '@/pages/manager/TeamBalances'
 import AdminDashboard from '@/pages/admin/AdminDashboard'
 import AdminApprovals from '@/pages/admin/AdminApprovals'
+import AdminLeaves from '@/pages/admin/AdminLeaves'
 import AdminEmployees from '@/pages/admin/AdminEmployees'
 import AdminDepartments from '@/pages/admin/AdminDepartments'
 import AdminAddEmployee from '@/pages/admin/AdminAddEmployee'
@@ -119,6 +120,7 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRole="ADMIN"><AppLayout /></ProtectedRoute>}>
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/pending" element={<AdminApprovals />} />
+            <Route path="/admin/leaves" element={<AdminLeaves />} />
             <Route path="/admin/employees" element={<AdminEmployees />} />
             <Route path="/admin/departments" element={<AdminDepartments />} />
             <Route path="/admin/employees/add" element={<AdminAddEmployee />} />

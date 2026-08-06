@@ -29,6 +29,7 @@ const managerNav = [
 const adminNav = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/pending', label: 'Pending Approvals', icon: CheckSquare },
+  { to: '/admin/leaves', label: 'All Leaves', icon: FileText },
   { to: '/admin/employees', label: 'All Employees', icon: Users },
   { to: '/admin/employees/add', label: 'Add Employee', icon: UserPlus },
   { to: '/admin/departments', label: 'Departments', icon: Building2 },

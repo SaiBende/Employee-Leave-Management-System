@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import { api } from '@/api/client'
+import { useAuth } from '@/context/AuthContext'
 import { StatusBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import LeaveCommentThread from '@/components/LeaveCommentThread'
 import type { ApiResponse, LeaveResponse, EmployeeResponse } from '@/types'
 import { CheckCircle2, XCircle, MessageSquare, Clock, Users } from 'lucide-react'
 
 export default function AdminApprovals() {
+  const { user } = useAuth()
   const [leaves, setLeaves] = useState<LeaveResponse[]>([])
   const [managerByEmp, setManagerByEmp] = useState<Record<number, string>>({})
   const [loading, setLoading] = useState(true)
@@ -119,14 +122,19 @@ export default function AdminApprovals() {
                     <p className="text-sm text-foreground leading-relaxed">{leave.reason}</p>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <input
-                      className="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-sm shadow-sm transition-all hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      placeholder="Add a comment (optional)..."
-                      value={commentInput[leave.id] || ''}
-                      onChange={(e) => setCommentInput({ ...commentInput, [leave.id]: e.target.value })}
-                    />
+                  <LeaveCommentThread leaveId={leave.id} initialComments={leave.comments} currentUserId={user?.id} />
+
+                  <div className="p-3 rounded-lg bg-background border border-border/30">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Decision Note (optional)</p>
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <input
+                        className="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-sm shadow-sm transition-all hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        placeholder="Add a comment (optional)..."
+                        value={commentInput[leave.id] || ''}
+                        onChange={(e) => setCommentInput({ ...commentInput, [leave.id]: e.target.value })}
+                      />
+                    </div>
                   </div>
 
                   <div className="flex gap-2 pt-1">

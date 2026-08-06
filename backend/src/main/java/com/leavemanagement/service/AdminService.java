@@ -3,6 +3,7 @@ package com.leavemanagement.service;
 import com.leavemanagement.dto.DashboardResponse;
 import com.leavemanagement.dto.DepartmentResponse;
 import com.leavemanagement.dto.EmployeeResponse;
+import com.leavemanagement.dto.LeaveCommentResponse;
 import com.leavemanagement.dto.LeaveResponse;
 import com.leavemanagement.entity.Department;
 import com.leavemanagement.entity.Employee;
@@ -10,9 +11,11 @@ import com.leavemanagement.entity.Leave;
 import com.leavemanagement.enums.LeaveStatus;
 import com.leavemanagement.repository.DepartmentRepository;
 import com.leavemanagement.repository.EmployeeRepository;
+import com.leavemanagement.repository.LeaveCommentRepository;
 import com.leavemanagement.repository.LeaveRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -21,13 +24,37 @@ public class AdminService {
     private final EmployeeRepository employeeRepository;
     private final LeaveRepository leaveRepository;
     private final DepartmentRepository departmentRepository;
+    private final LeaveCommentRepository commentRepository;
 
     public AdminService(EmployeeRepository employeeRepository,
                         LeaveRepository leaveRepository,
-                        DepartmentRepository departmentRepository) {
+                        DepartmentRepository departmentRepository,
+                        LeaveCommentRepository commentRepository) {
         this.employeeRepository = employeeRepository;
         this.leaveRepository = leaveRepository;
         this.departmentRepository = departmentRepository;
+        this.commentRepository = commentRepository;
+    }
+
+    public List<LeaveResponse> getAllLeaves() {
+        return leaveRepository.findAll().stream()
+            .sorted(Comparator.comparing(Leave::getCreatedAt).reversed())
+            .map(l -> LeaveResponse.builder()
+                .id(l.getId())
+                .employeeId(l.getEmployee().getId())
+                .employeeName(l.getEmployee().getName())
+                .leaveType(l.getLeaveType().name())
+                .startDate(l.getStartDate())
+                .endDate(l.getEndDate())
+                .reason(l.getReason())
+                .status(l.getStatus().name())
+                .managerComments(l.getManagerComments())
+                .createdAt(l.getCreatedAt())
+                .updatedAt(l.getUpdatedAt())
+                .comments(commentRepository.findByLeaveIdOrderByCreatedAtAsc(l.getId())
+                    .stream().map(LeaveCommentResponse::from).toList())
+                .build())
+            .toList();
     }
 
     public DashboardResponse getDashboard() {

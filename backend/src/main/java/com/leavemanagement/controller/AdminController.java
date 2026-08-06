@@ -4,6 +4,7 @@ import com.leavemanagement.dto.ApiResponse;
 import com.leavemanagement.dto.DashboardResponse;
 import com.leavemanagement.dto.DepartmentResponse;
 import com.leavemanagement.dto.EmployeeResponse;
+import com.leavemanagement.dto.LeaveResponse;
 import com.leavemanagement.entity.Employee;
 import com.leavemanagement.security.CurrentUser;
 import com.leavemanagement.service.AdminService;
@@ -38,6 +39,13 @@ public class AdminController {
     public ResponseEntity<?> getAllEmployees(@CurrentUser Employee employee) {
         List<EmployeeResponse> employees = adminService.getAllEmployees();
         return ResponseEntity.ok(new ApiResponse(true, "Success", employees));
+    }
+
+    @GetMapping("/leaves")
+    @Operation(summary = "Get all leave requests across the organization")
+    public ResponseEntity<?> getAllLeaves(@CurrentUser Employee employee) {
+        List<LeaveResponse> leaves = adminService.getAllLeaves();
+        return ResponseEntity.ok(new ApiResponse(true, "Success", leaves));
     }
 
     @GetMapping("/departments")
