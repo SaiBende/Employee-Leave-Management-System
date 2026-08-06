@@ -2,7 +2,7 @@
 
 ## Overview
 
-PostgreSQL 16 database with four tables: `departments`, `employees`, `leaves`, and `leave_balances`. Uses ENUM types for roles, leave statuses, and leave types.
+PostgreSQL 16 database with five tables: `departments`, `employees`, `leaves`, `leave_balances`, and `leave_comments`. Uses ENUM types for roles, leave statuses, and leave types.
 
 ## Entity Relationship Diagram
 
@@ -45,8 +45,20 @@ PostgreSQL 16 database with four tables: `departments`, `employees`, `leaves`, a
 │     reason         │
 │     status (ENUM)  │
 │     manager_comments
+│ FK  decided_by_id  │
+│     decided_at     │
 │     created_at     │
 │     updated_at     │
+└────────────────────┘
+
+┌────────────────────┐
+│   leave_comments   │
+├────────────────────┤
+│ PK  id (BIGSERIAL) │
+│ FK  leave_id       │
+│ FK  author_id      │
+│     comment        │
+│     created_at     │
 └────────────────────┘
 
 ┌────────────────────┐
@@ -106,13 +118,27 @@ Stores all leave requests submitted by employees.
 | end_date | DATE | NOT NULL |
 | reason | TEXT | NOT NULL |
 | status | leave_status | NOT NULL, DEFAULT 'PENDING' |
-| manager_comments | TEXT | NULLABLE |
+| manager_comments | TEXT | NULLABLE (decision note attached to approve/reject) |
+| decided_by_id | BIGINT | FK → employees.id (who approved/rejected; SET NULL on delete) |
+| decided_at | TIMESTAMP WITH TIME ZONE | NULLABLE (when the decision was made) |
 | created_at | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() |
 | updated_at | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() |
 
+### leave_comments
+
+Discussion-thread comments on a leave request. Comments are independent of the leave status — they can be posted before, during, or after the decision. System comments (`APPROVED - ...`, `REJECTED - ...`, `CANCELLED - ...`) are also stored here.
+
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | BIGSERIAL | PRIMARY KEY |
+| leave_id | BIGINT | NOT NULL, FK → leaves.id (CASCADE on delete) |
+| author_id | BIGINT | NOT NULL, FK → employees.id (author of the comment) |
+| comment | TEXT | NOT NULL |
+| created_at | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() |
+
 ### leave_balances
 
-Tracks available leave days per employee, per leave type, per year. Balance is deducted when a manager approves a leave.
+Tracks available leave days per employee, per leave type, per year. Balance is deducted when a manager approves a leave and restored when an approved leave is cancelled by the employee.
 
 | Column | Type | Constraints |
 |--------|------|-------------|
@@ -136,9 +162,9 @@ Tracks available leave days per employee, per leave type, per year. Balance is d
 
 ### leave_status
 - `PENDING` — Awaiting manager approval
-- `APPROVED` — Approved by manager
-- `REJECTED` — Rejected by manager with optional comments
-- `CANCELLED` — Cancelled by employee
+- `APPROVED` — Approved by manager/admin (records `decided_by_id` and `decided_at`)
+- `REJECTED` — Rejected by manager/admin with optional comments
+- `CANCELLED` — Cancelled by employee (pending or approved)
 
 ### leave_type
 - `ANNUAL` — Paid time off
@@ -154,6 +180,9 @@ Tracks available leave days per employee, per leave type, per year. Balance is d
 - `employees.department_id` → `departments.id` (RESTRICT on delete)
 - `employees.manager_id` → `employees.id` (SET NULL on delete)
 - `leaves.employee_id` → `employees.id` (CASCADE on delete)
+- `leaves.decided_by_id` → `employees.id` (SET NULL on delete)
+- `leave_comments.leave_id` → `leaves.id` (CASCADE on delete)
+- `leave_comments.author_id` → `employees.id` (CASCADE on delete)
 - `leave_balances.employee_id` → `employees.id` (CASCADE on delete)
 
 ### Check Constraints
@@ -169,6 +198,7 @@ Tracks available leave days per employee, per leave type, per year. Balance is d
 - `idx_leaves_status` — Filter by status
 - `idx_leaves_employee_status` — Composite: employee's leaves by status
 - `idx_leaves_dates` — Date range queries
+- `idx_leave_comments_leave` — Find comments for a leave (ordered by created_at)
 - `idx_leave_balances_employee` — Find balances by employee
 - `idx_leave_balances_year` — Filter balances by year
 

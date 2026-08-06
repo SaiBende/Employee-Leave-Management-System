@@ -58,6 +58,8 @@ After the seeder runs (fresh DB), these demo accounts are created:
 | Manager | alice@company.com | password123 |
 | Employee | charlie@company.com | password123 |
 
+> **Demo environment note:** In the current workspace database, the admin account is `admin@company.com` / `Admin@123`.
+
 ## API Documentation
 
 Once the backend is running:
@@ -85,11 +87,15 @@ Once the backend is running:
 | DELETE | `/api/employees/{id}` | Admin | Delete employee |
 | POST | `/api/leaves` | All | Apply leave |
 | GET | `/api/leaves` | All | My leaves |
+| GET | `/api/leaves/{id}` | All | Leave details (own, team, or org-wide) |
+| GET | `/api/leaves/calendar` | All | Role-scoped calendar feed (own / team / org-wide) |
+| GET | `/api/leaves/search` | All | Search my leaves by type/status |
 | PUT | `/api/leaves/{id}` | All | Edit leave |
-| DELETE | `/api/leaves/{id}` | All | Cancel leave |
-| GET | `/api/manager/pending-leaves` | Manager | Pending approvals |
-| PUT | `/api/manager/leaves/{id}/approve` | Manager | Approve leave |
-| PUT | `/api/manager/leaves/{id}/reject` | Manager | Reject leave |
+| DELETE | `/api/leaves/{id}` | All | Cancel leave (pending or approved — approved restores balance) |
+| POST | `/api/leaves/{id}/comments` | All | Add a comment to the leave discussion thread |
+| GET | `/api/manager/pending-leaves` | Manager/Admin | Pending approvals (team for manager, org-wide for admin) |
+| PUT | `/api/manager/leaves/{id}/approve` | Manager/Admin | Approve leave (optional decision note) |
+| PUT | `/api/manager/leaves/{id}/reject` | Manager/Admin | Reject leave (optional decision note) |
 | GET | `/api/manager/employees` | Manager | Team members |
 | GET | `/api/manager/employees/{id}/leaves` | Manager | Employee leave history |
 | GET | `/api/leave-balances/me` | All | My leave balances |
@@ -99,6 +105,7 @@ Once the backend is running:
 | PUT | `/api/leave-balances/{id}` | Manager/Admin | Update leave balance |
 | GET | `/api/admin/dashboard` | Admin | Admin dashboard stats |
 | GET | `/api/admin/employees` | Admin | All employees |
+| GET | `/api/admin/leaves` | Admin | All leave requests org-wide (with discussions) |
 | GET | `/api/admin/departments` | Admin | All departments |
 | POST | `/api/admin/departments` | Admin | Create department |
 | DELETE | `/api/admin/departments/{id}` | Admin | Delete department |
@@ -126,14 +133,15 @@ Employee Leave Management System/
 ├── frontend/                   # React + Vite application
 │   ├── src/
 │   │   ├── api/                # HTTP client with JWT
-│   │   ├── components/         # UI components (Button, Card, Badge, Input, Select)
+│   │   ├── components/         # UI components + shared LeaveCommentThread, ApproverNote
 │   │   ├── context/            # AuthContext
 │   │   ├── layouts/            # AppLayout, AuthLayout
 │   │   ├── pages/              # All route pages
 │   │   │   ├── auth/           # Login, Register
-│   │   │   ├── admin/          # Dashboard, Employees, Departments
-│   │   │   ├── employee/       # Dashboard, ApplyLeave, Leaves, Profile, MyBalances
-│   │   │   └── manager/        # Dashboard, PendingApprovals, Team, AddEmployee, TeamBalances
+│   │   │   ├── admin/          # Dashboard, Employees, Departments, Pending Approvals, All Leaves
+│   │   │   ├── employee/       # Dashboard, ApplyLeave, Leaves, Details, Profile, MyBalances
+│   │   │   ├── manager/        # Dashboard, PendingApprovals, Team, AddEmployee, TeamBalances, History
+│   │   │   └── Calendar.tsx    # Org/team calendar view
 │   │   ├── types/              # TypeScript interfaces
 │   │   └── lib/                # Utility functions
 │   ├── index.html
@@ -145,17 +153,22 @@ Employee Leave Management System/
 ├── openapi/
 │   └── README.md               # OpenAPI import instructions
 └── docs/
-    └── .gitkeep
+    ├── user-manual.md          # Role-based user guide
+    ├── architecture.md         # System architecture & data flows
+    └── database.md             # Schema, tables, constraints
 ```
 
 ## Features
 
 - **Role-based access** — Admin, Manager, and Employee roles with distinct dashboards and permissions
 - **JWT authentication** — Secure token-based auth with automatic refresh flow
-- **Leave lifecycle** — Apply, edit, cancel, approve, reject with status tracking
-- **Leave Balance Tracking** — Track remaining leave days (Annual, Sick, Personal) per employee per year, auto-deduct on approval
+- **Leave lifecycle** — Apply, edit, cancel, approve, reject with status tracking; approved leaves can be cancelled by the employee with automatic balance restore
+- **Leave Balance Tracking** — Track remaining leave days (Annual, Sick, Personal) per employee per year, auto-deduct on approval and auto-restore on cancellation
+- **Calendar View** — Month-grid calendar of leaves (own for employees, team for managers, org-wide for admins) with status colors and day details
+- **Discussion threads** — Comment on any leave request at any status; independent of the approval decision, with automatic system comments on approve/reject/cancel
+- **Approver tracking** — Every decided leave shows who approved/rejected it and when
 - **Manager workflows** — View team, approve/reject with comments, audit employee history, edit leave balances
-- **Admin workflows** — Manage all employees, departments, leave balances; org-wide dashboard
+- **Admin workflows** — Manage all employees, departments, leave balances; org-wide pending approvals and all-leaves view
 - **Dashboard analytics** — Stats cards with leave breakdown, recent activity feed, leave balance progress bars
 - **Responsive UI** — Mobile-friendly sidebar, gradient theme, Tailwind CSS v4
 

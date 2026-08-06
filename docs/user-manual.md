@@ -56,28 +56,48 @@ The Employee Dashboard displays:
 ### 5. View Leave Details
 
 - Click the **Eye** icon on any leave entry to see full details
-- Shows leave type, dates, reason, status, manager comments, and timestamps
+- Shows leave type, dates, reason, status, manager comments, who approved/rejected it, and timestamps
+- Below the request information is the **Discussion** thread
 
-### 6. Edit a Pending Leave
+### 6. Discussion on a Leave
+
+- Every leave request has its own comment thread, available at **any status** (Pending, Approved, or Rejected)
+- Post questions, clarifications, or notes — your manager and admins can reply
+- The thread is independent of the approve/reject decision
+- Approve/Reject/Cancel actions automatically add a system note like `APPROVED - ...`, `REJECTED - ...`, or `CANCELLED - ...` to the thread
+- Click the comment bubble count next to a request to expand/read the thread
+
+### 7. Edit a Pending Leave
 
 1. From Leave Details, click **Edit**
 2. Update the leave type, dates, or reason
 3. Click **Save Changes**
 4. Note: Only leaves with PENDING status can be edited
 
-### 7. Cancel a Leave
+### 8. Cancel a Leave
 
-- From Leave Details, click **Delete/Cancel**
-- Confirm the cancellation
-- The leave status changes to Cancelled
+- **Pending leaves**: From Leave Details, click **Cancel Request** — the leave becomes Cancelled
+- **Approved leaves**: From Leave Details, click **Cancel Approved Leave** — confirm the dialog, and the leave becomes Cancelled with your leave balance **restored** for those days
+- Note: Leaves that were rejected cannot be cancelled
 
-### 8. View Leave Balances
+### 9. View Leave Balances
 
 1. Click **Leave Balances** in the sidebar (or view on the Dashboard)
 2. See your remaining leave days for each leave type (Annual, Sick, Personal)
 3. Each card shows: remaining days, total days, used days, and a progress bar
+4. Your remaining days increase automatically when you cancel an approved leave
 
-### 9. View Profile
+### 10. View the Calendar
+
+- Click **Calendar** in the sidebar to see a month view of leaves
+- Day cells show colored dots/entries by status (approved/pending/rejected/cancelled)
+- Click any day to see the leave details for that day
+- What you see depends on your role:
+  - **Employee**: your own leaves
+  - **Manager**: your team's leaves
+  - **Admin**: every leave in the organization
+
+### 11. View Profile
 
 1. Click **Profile** in the sidebar
 2. View your name, email, department, role, and account creation date
@@ -102,10 +122,11 @@ The Manager Dashboard displays:
 1. Click **Pending Approvals** in the sidebar
 2. View all pending leave requests from your team members
 3. For each request:
-   - Read the employee's reason
-   - Optional: Add a comment in the text field
+   - Read the employee's reason and the current **Discussion** thread
+   - Post clarifying questions on the thread at any time — this does **not** decide the leave
+   - Optional: Type a **Decision Note** that is attached to your Approve/Reject action
    - Click **Approve** (green) or **Reject** (red)
-4. Approved/rejected leaves are removed from the pending list
+4. Approved/rejected leaves are removed from the pending list; a system comment (`APPROVED - ...` / `REJECTED - ...`) is added to the thread
 
 ### 4. View Team Members
 
@@ -116,8 +137,14 @@ The Manager Dashboard displays:
 ### 5. View Employee Leave History
 
 1. From **My Team**, click the **Eye** icon next to any employee
-2. View that employee's complete leave history
-3. See leave type, dates, reason, status, and manager comments
+2. View that employee's complete leave history (including approved/rejected ones)
+3. See leave type, dates, reason, status, who approved/rejected, and the comment count
+4. Click any request to expand its **Discussion** thread and add comments — even after the decision
+
+### 5. Approve as Admin (Extra Access)
+
+- Admins see the **Pending Approvals** view for the entire organization
+- Admins can approve/reject any team's leave requests
 
 ### 6. Add a New Employee
 
@@ -154,8 +181,6 @@ The Manager Dashboard displays:
 
 ---
 
----
-
 ## Admin Guide
 
 ### 1. Login
@@ -170,24 +195,42 @@ The Admin Dashboard displays organization-wide statistics:
 - **Total Employees**, **Total Leaves**, **Pending Approvals**, **Approved**, **Rejected**
 - **Recent Activities**: All leave requests across the organization
 
-### 3. Manage Employees
+### 3. Pending Approvals (Org-wide)
+
+1. Click **Pending Approvals** in the sidebar
+2. Review every pending leave request in the organization, with each employee's manager shown
+3. Read the discussion thread and reply with comments independently of the decision
+4. Approve or Reject with an optional **Decision Note** (admin has same rights as a manager here)
+
+### 4. All Leaves
+
+1. Click **All Leaves** in the sidebar
+2. See every leave request across the organization, newest first
+3. Filter by status (All / Pending / Approved / Rejected / Cancelled)
+4. Expand any request to read/post in its discussion thread — at any time, regardless of decision
+
+### 5. Manage Employees
 
 1. Click **All Employees** in the sidebar
-2. View all employees with their name, email, department, and role
+2. View all employees with their name, email, department, role, and manager
 3. Click the **Edit** icon to modify an employee's details
 4. Click the **Delete** icon to remove an employee
 
-### 4. Manage Departments
+### 6. Manage Departments
 
 1. Click **Departments** in the sidebar
 2. View all departments
 3. Add a new department by typing the name and clicking **Add**
 4. Delete a department by clicking the **Trash** icon
 
-### 5. View All Leave Balances
+### 7. View All Leave Balances
 
 - Navigate to **Leave Balances** in the sidebar (shared with Manager)
 - Admins can see and edit leave balances for every employee in the organization
+
+### 8. View the Calendar
+
+- Click **Calendar** in the sidebar for an org-wide month view of every team's leaves
 
 ---
 
@@ -195,9 +238,9 @@ The Admin Dashboard displays organization-wide statistics:
 
 ### Sidebar (Desktop)
 - The sidebar shows different menu items based on your role
-- **Admin Menu**: Dashboard, All Employees, Departments, Profile
-- **Employee Menu**: Dashboard, Apply Leave, Leave History, Leave Balances, Profile
-- **Manager Menu**: Dashboard, Pending Approvals, My Team, Add Employee, Leave Balances, Profile
+- **Admin Menu**: Dashboard, Pending Approvals, All Leaves, All Employees, Add Employee, Departments, Calendar, Profile
+- **Employee Menu**: Dashboard, Apply Leave, Leave History, Calendar, Leave Balances, Profile
+- **Manager Menu**: Dashboard, Pending Approvals, My Team, Add Employee, Leave Balances, Calendar, Profile
 
 ### Mobile
 - The sidebar is hidden by default on mobile
@@ -216,6 +259,8 @@ The Admin Dashboard displays organization-wide statistics:
 |---------|----------|
 | Cannot login | Check email and password are correct. Ensure backend is running. |
 | Cannot see leaves | Make sure you are logged in as the correct user. |
-| Cannot approve leaves | Only MANAGER role users can approve. Login with manager credentials. |
+| Cannot approve leaves | MANAGER and ADMIN roles can approve. Login with the right credentials. |
+| Comments not posting | You must be the leave owner, their manager, or an admin to comment. |
+| Approved leave rejected when cancelling | Only pending or approved leaves can be cancelled; rejected leaves stay as-is. |
 | Page not found | Check the URL. Use the sidebar navigation instead of manual URLs. |
 | Blank page | Check browser console for errors. Restart the frontend dev server. |
