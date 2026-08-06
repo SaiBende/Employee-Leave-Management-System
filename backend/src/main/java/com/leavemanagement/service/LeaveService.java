@@ -11,10 +11,12 @@ import com.leavemanagement.enums.LeaveStatus;
 import com.leavemanagement.enums.LeaveType;
 import com.leavemanagement.enums.Role;
 import com.leavemanagement.repository.EmployeeRepository;
+import com.leavemanagement.repository.LeaveBalanceRepository;
 import com.leavemanagement.repository.LeaveCommentRepository;
 import com.leavemanagement.repository.LeaveRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -23,13 +25,16 @@ public class LeaveService {
     private final LeaveRepository leaveRepository;
     private final EmployeeRepository employeeRepository;
     private final LeaveCommentRepository commentRepository;
+    private final LeaveBalanceRepository leaveBalanceRepository;
 
     public LeaveService(LeaveRepository leaveRepository,
                         EmployeeRepository employeeRepository,
-                        LeaveCommentRepository commentRepository) {
+                        LeaveCommentRepository commentRepository,
+                        LeaveBalanceRepository leaveBalanceRepository) {
         this.leaveRepository = leaveRepository;
         this.employeeRepository = employeeRepository;
         this.commentRepository = commentRepository;
+        this.leaveBalanceRepository = leaveBalanceRepository;
     }
 
     public LeaveResponse apply(LeaveRequest request, Employee employee) {
@@ -91,14 +96,34 @@ public class LeaveService {
         if (!leave.getEmployee().getId().equals(employee.getId())) {
             throw new SecurityException("Access denied");
         }
-        if (leave.getStatus() != LeaveStatus.PENDING) {
-            throw new IllegalArgumentException("Can only cancel pending leaves");
+        if (leave.getStatus() == LeaveStatus.CANCELLED) {
+            throw new IllegalArgumentException("Leave is already cancelled");
+        }
+        if (leave.getStatus() != LeaveStatus.PENDING && leave.getStatus() != LeaveStatus.APPROVED) {
+            throw new IllegalArgumentException("Only pending or approved leaves can be cancelled");
         }
 
+        boolean wasApproved = leave.getStatus() == LeaveStatus.APPROVED;
         leave.setStatus(LeaveStatus.CANCELLED);
-        leaveRepository.save(leave);
+        leave = leaveRepository.save(leave);
 
-        return new ApiResponse(true, "Leave cancelled successfully", null);
+        if (wasApproved) {
+            restoreBalance(leave);
+            addSystemComment(leave, "CANCELLED - cancelled by " + employee.getName(), employee);
+        }
+
+        return new ApiResponse(true, "Leave cancelled successfully", toResponse(leave));
+    }
+
+    private void restoreBalance(Leave leave) {
+        int year = leave.getStartDate().getYear();
+        int days = (int) ChronoUnit.DAYS.between(leave.getStartDate(), leave.getEndDate()) + 1;
+        leaveBalanceRepository
+            .findByEmployeeIdAndLeaveTypeAndYear(leave.getEmployee().getId(), leave.getLeaveType(), year)
+            .ifPresent(balance -> {
+                balance.setUsedDays(Math.max(0, balance.getUsedDays() - days));
+                leaveBalanceRepository.save(balance);
+            });
     }
 
     public List<LeaveResponse> searchLeaves(Employee employee, String type, String status) {

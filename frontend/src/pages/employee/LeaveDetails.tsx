@@ -24,7 +24,10 @@ export default function LeaveDetails() {
   }, [id])
 
   const handleCancel = async () => {
-    if (!confirm('Are you sure you want to cancel this leave request?')) return
+    const isApproved = leave?.status === 'APPROVED'
+    if (!confirm(isApproved
+      ? 'Cancel this approved leave? Your leave balance for those days will be restored.'
+      : 'Are you sure you want to cancel this leave request?')) return
     try {
       await api.delete(`/leaves/${id}`)
       navigate('/employee/leaves')
@@ -127,13 +130,15 @@ export default function LeaveDetails() {
 
           <LeaveCommentThread leaveId={leave.id} initialComments={leave.comments} currentUserId={user?.id} />
 
-          {leave.status === 'PENDING' && (
+          {(leave.status === 'PENDING' || leave.status === 'APPROVED') && (
             <div className="flex gap-3 pt-4 border-t border-border">
-              <Button variant="outline" onClick={() => navigate(`/employee/leaves/${id}/edit`)}>
-                <Edit className="h-4 w-4" /> Edit Request
-              </Button>
+              {leave.status === 'PENDING' && (
+                <Button variant="outline" onClick={() => navigate(`/employee/leaves/${id}/edit`)}>
+                  <Edit className="h-4 w-4" /> Edit Request
+                </Button>
+              )}
               <Button variant="destructive" onClick={handleCancel}>
-                <Trash2 className="h-4 w-4" /> Cancel Request
+                <Trash2 className="h-4 w-4" /> {leave.status === 'APPROVED' ? 'Cancel Approved Leave' : 'Cancel Request'}
               </Button>
             </div>
           )}
