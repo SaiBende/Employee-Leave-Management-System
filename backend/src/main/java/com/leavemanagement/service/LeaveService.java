@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 public class LeaveService {
@@ -152,9 +153,11 @@ public class LeaveService {
             case MANAGER -> {
                 List<Long> teamIds = employeeRepository.findByManagerId(employee.getId())
                     .stream().map(Employee::getId).toList();
+                List<Leave> own = leaveRepository.findByEmployeeIdOrderByCreatedAtDesc(employee.getId());
                 leaves = teamIds.isEmpty()
-                    ? List.of()
-                    : leaveRepository.findByEmployeeIdIn(teamIds);
+                    ? own
+                    : Stream.concat(leaveRepository.findByEmployeeIdIn(teamIds).stream(), own.stream())
+                        .distinct().toList();
             }
             default -> leaves = leaveRepository.findByEmployeeIdOrderByCreatedAtDesc(employee.getId());
         }
@@ -225,6 +228,7 @@ public class LeaveService {
             .id(leave.getId())
             .employeeId(leave.getEmployee().getId())
             .employeeName(leave.getEmployee().getName())
+            .employeeRole(leave.getEmployee().getRole().name())
             .leaveType(leave.getLeaveType().name())
             .startDate(leave.getStartDate())
             .endDate(leave.getEndDate())

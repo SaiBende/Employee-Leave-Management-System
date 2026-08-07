@@ -127,6 +127,7 @@ public class ManagerService {
             .id(leave.getId())
             .employeeId(leave.getEmployee().getId())
             .employeeName(leave.getEmployee().getName())
+            .employeeRole(leave.getEmployee().getRole().name())
             .leaveType(leave.getLeaveType().name())
             .startDate(leave.getStartDate())
             .endDate(leave.getEndDate())

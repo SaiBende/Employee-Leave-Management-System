@@ -43,6 +43,7 @@ public class AdminService {
                 .id(l.getId())
                 .employeeId(l.getEmployee().getId())
                 .employeeName(l.getEmployee().getName())
+                .employeeRole(l.getEmployee().getRole().name())
                 .leaveType(l.getLeaveType().name())
                 .startDate(l.getStartDate())
                 .endDate(l.getEndDate())

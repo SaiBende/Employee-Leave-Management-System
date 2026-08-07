@@ -10,6 +10,7 @@ public class LeaveResponse {
     private Long id;
     private Long employeeId;
     private String employeeName;
+    private String employeeRole;
     private String leaveType;
     private LocalDate startDate;
     private LocalDate endDate;

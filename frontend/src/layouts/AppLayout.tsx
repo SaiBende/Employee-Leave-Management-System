@@ -19,9 +19,12 @@ const employeeNav = [
 const managerNav = [
   { to: '/manager/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/manager/pending', label: 'Pending Approvals', icon: CheckSquare },
+  { to: '/employee/leaves/apply', label: 'Apply Leave', icon: CalendarPlus },
+  { to: '/employee/leaves', label: 'My Leaves', icon: Clock },
   { to: '/manager/employees', label: 'My Team', icon: Users },
   { to: '/manager/employees/add', label: 'Add Employee', icon: User },
-  { to: '/manager/balances', label: 'Leave Balances', icon: Coins },
+  { to: '/manager/balances', label: 'Team Leave Balances', icon: Coins },
+  { to: '/employee/balances', label: 'My Leave Balances', icon: Coins },
   { to: '/calendar', label: 'Calendar', icon: CalendarDays },
   { to: '/employee/profile', label: 'Profile', icon: Building2 },
 ]

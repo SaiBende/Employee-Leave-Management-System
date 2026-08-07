@@ -105,7 +105,11 @@ export default function AdminApprovals() {
                         {leave.employeeName?.charAt(0)?.toUpperCase()}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-foreground">{leave.employeeName}</p>
+                        <p className="text-sm font-semibold text-foreground">{leave.employeeName}
+                          <span className={`ml-2 text-[10px] px-2 py-0.5 rounded-full font-medium uppercase tracking-wide ${leave.employeeRole === 'MANAGER' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                            {leave.employeeRole === 'MANAGER' ? 'Manager' : 'Employee'}
+                          </span>
+                        </p>
                         <p className="text-xs text-muted-foreground">
                           {leave.leaveType} &middot; {leave.startDate} to {leave.endDate}
                         </p>

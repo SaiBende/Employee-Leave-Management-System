@@ -42,6 +42,7 @@ export interface LeaveResponse {
   id: number
   employeeId: number
   employeeName: string
+  employeeRole?: string
   leaveType: string
   startDate: string
   endDate: string
