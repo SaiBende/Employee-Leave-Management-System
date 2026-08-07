@@ -52,6 +52,9 @@ export interface LeaveResponse {
   decidedById?: number | null
   decidedByName?: string | null
   decidedAt?: string | null
+  cancelledById?: number | null
+  cancelledByName?: string | null
+  cancelledAt?: string | null
   createdAt: string
   updatedAt: string
   comments?: LeaveComment[]

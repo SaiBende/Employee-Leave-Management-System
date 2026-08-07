@@ -110,16 +110,30 @@ export default function LeaveDetails() {
             </div>
           </div>
 
-          {(leave.managerComments || leave.decidedByName) && (
+          {(leave.managerComments || leave.decidedByName || (leave.status === 'CANCELLED' && leave.cancelledByName)) && (
             <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Decision</p>
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200">
-                <MessageSquare className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                {leave.status === 'CANCELLED' ? 'Cancellation' : 'Decision'}
+              </p>
+              <div className={`flex items-start gap-3 p-4 rounded-xl border ${leave.status === 'CANCELLED' ? 'bg-orange-50 border-orange-200' : 'bg-amber-50 border-amber-200'}`}>
+                <MessageSquare className={`h-4 w-4 mt-0.5 shrink-0 ${leave.status === 'CANCELLED' ? 'text-orange-600' : 'text-amber-600'}`} />
                 <div>
-                  {leave.managerComments && <p className="text-sm text-amber-800">{leave.managerComments}</p>}
-                  {leave.decidedByName && (
+                  {leave.managerComments && <p className={`text-sm ${leave.status === 'CANCELLED' ? 'text-orange-800' : 'text-amber-800'}`}>{leave.managerComments}</p>}
+                  {leave.status === 'CANCELLED' && leave.cancelledByName && (
+                    <p className="text-[11px] text-orange-700/80 mt-1">
+                      Cancelled by {leave.cancelledByName}
+                      {leave.cancelledAt && <> &middot; {new Date(leave.cancelledAt).toLocaleDateString()}</>}
+                    </p>
+                  )}
+                  {leave.status === 'APPROVED' && leave.decidedByName && (
                     <p className="text-[11px] text-amber-700/80 mt-1">
-                      {leave.status === 'APPROVED' ? 'Approved' : 'Rejected'} by {leave.decidedByName}
+                      Approved by {leave.decidedByName}
+                      {leave.decidedAt && <> &middot; {new Date(leave.decidedAt).toLocaleDateString()}</>}
+                    </p>
+                  )}
+                  {leave.status === 'REJECTED' && leave.decidedByName && (
+                    <p className="text-[11px] text-amber-700/80 mt-1">
+                      Rejected by {leave.decidedByName}
                       {leave.decidedAt && <> &middot; {new Date(leave.decidedAt).toLocaleDateString()}</>}
                     </p>
                   )}

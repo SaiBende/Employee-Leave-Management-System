@@ -16,6 +16,8 @@ import com.leavemanagement.repository.LeaveCommentRepository;
 import com.leavemanagement.repository.LeaveRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Stream;
@@ -103,9 +105,14 @@ public class LeaveService {
         if (leave.getStatus() != LeaveStatus.PENDING && leave.getStatus() != LeaveStatus.APPROVED) {
             throw new IllegalArgumentException("Only pending or approved leaves can be cancelled");
         }
+        if (leave.getEndDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Cannot cancel a leave whose dates have already passed");
+        }
 
         boolean wasApproved = leave.getStatus() == LeaveStatus.APPROVED;
         leave.setStatus(LeaveStatus.CANCELLED);
+        leave.setCancelledBy(employee);
+        leave.setCancelledAt(LocalDateTime.now());
         leave = leaveRepository.save(leave);
 
         if (wasApproved) {
@@ -238,6 +245,9 @@ public class LeaveService {
             .decidedById(leave.getDecidedBy() != null ? leave.getDecidedBy().getId() : null)
             .decidedByName(leave.getDecidedBy() != null ? leave.getDecidedBy().getName() : null)
             .decidedAt(leave.getDecidedAt())
+            .cancelledById(leave.getCancelledBy() != null ? leave.getCancelledBy().getId() : null)
+            .cancelledByName(leave.getCancelledBy() != null ? leave.getCancelledBy().getName() : null)
+            .cancelledAt(leave.getCancelledAt())
             .createdAt(leave.getCreatedAt())
             .updatedAt(leave.getUpdatedAt())
             .comments(getComments(leave.getId()))

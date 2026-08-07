@@ -20,6 +20,9 @@ public class LeaveResponse {
     private Long decidedById;
     private String decidedByName;
     private LocalDateTime decidedAt;
+    private Long cancelledById;
+    private String cancelledByName;
+    private LocalDateTime cancelledAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<LeaveCommentResponse> comments;

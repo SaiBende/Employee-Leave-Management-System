@@ -71,12 +71,16 @@ CREATE TABLE leaves (
     manager_comments TEXT,
     decided_by_id BIGINT,
     decided_at TIMESTAMP WITH TIME ZONE,
+    cancelled_by_id BIGINT,
+    cancelled_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
 
     CONSTRAINT fk_leave_employee FOREIGN KEY (employee_id)
         REFERENCES employees(id) ON DELETE CASCADE,
     CONSTRAINT fk_leave_decided_by FOREIGN KEY (decided_by_id)
+        REFERENCES employees(id) ON DELETE SET NULL,
+    CONSTRAINT fk_leave_cancelled_by FOREIGN KEY (cancelled_by_id)
         REFERENCES employees(id) ON DELETE SET NULL,
     CONSTRAINT chk_date_range CHECK (end_date >= start_date)
 );
