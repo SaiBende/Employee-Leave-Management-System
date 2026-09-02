@@ -1,9 +1,11 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
+import { useTheme } from '@/context/ThemeContext'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Users, LogOut, User, FileText, Clock,
-  CalendarPlus, CalendarDays, ChevronLeft, Menu, CheckSquare, Building2, Coins, UserPlus
+  CalendarPlus, CalendarDays, ChevronLeft, Menu, CheckSquare, Building2, Coins, UserPlus,
+  Sun, Moon
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -42,6 +44,7 @@ const adminNav = [
 
 export default function AppLayout() {
   const { user, logout } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const location = useLocation()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -127,21 +130,43 @@ export default function AppLayout() {
             )
           })}
         </nav>
-
-        {/* Logout */}
-        <div className="p-3 border-t border-border">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all duration-200 group"
-          >
-            <LogOut className="h-4 w-4 group-hover:scale-110 transition-transform" />
-            Logout
-          </button>
-        </div>
       </aside>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
+        {/* Desktop header */}
+        <header className="hidden lg:flex lg:items-center lg:justify-between lg:gap-4 lg:px-6 lg:py-3 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-30 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center">
+              <FileText className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <h1 className="text-lg font-semibold text-foreground">Employee Leave Management System</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-200 group"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-4 w-4 group-hover:rotate-90 transition-transform duration-300" />
+              ) : (
+                <Moon className="h-4 w-4 group-hover:-rotate-90 transition-transform duration-300" />
+              )}
+              <span className="hidden sm:inline">{theme === 'dark' ? 'Light' : 'Dark'}</span>
+            </button>
+            {/* Logout */}
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all duration-200 group"
+            >
+              <LogOut className="h-4 w-4 group-hover:scale-110 transition-transform" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
+          </div>
+        </header>
+
         {/* Mobile header */}
         <header className="flex items-center gap-3 p-4 border-b border-border bg-card/80 backdrop-blur-sm lg:hidden sticky top-0 z-30">
           <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">

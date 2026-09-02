@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { api } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { UserPlus, AlertCircle, CheckCircle2, Mail, Lock, User, Building2, Shield } from 'lucide-react'
 
@@ -140,21 +140,24 @@ export default function RegisterPage() {
               <div className="relative">
                 <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                 <Select
-                  className="pl-10"
-                  value={form.departmentId}
-                  onChange={(e) => setForm({ ...form, departmentId: Number(e.target.value) })}
-                  required
+                  value={String(form.departmentId)}
+                  onValueChange={(val) => setForm({ ...form, departmentId: Number(val) })}
                 >
-                  <option value="">Select department</option>
-                  {departments.map((d) => (
-                    <option key={d.id} value={d.id}>{d.name}</option>
-                  ))}
+                  <SelectTrigger className="pl-10">
+                    <SelectValue placeholder="Select department..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Select department</SelectItem>
+                    {departments.map((d) => (
+                      <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
             </div>
           )}
 
-          <Button type="submit" size="xl" className="w-full" disabled={loading}>
+          <Button type="submit" size="lg" className="w-full" disabled={loading}>
             {loading ? (
               <span className="flex items-center gap-2">
                 <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />

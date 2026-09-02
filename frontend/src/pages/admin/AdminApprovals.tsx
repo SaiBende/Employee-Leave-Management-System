@@ -135,7 +135,7 @@ export default function AdminApprovals() {
                   </div>
 
                   <div className="flex gap-2 pt-1">
-                    <Button size="sm" variant="success" onClick={() => handleApprove(leave.id)} className="flex-1">
+                    <Button size="sm" variant="default" className="bg-green-100 text-green-700 border-green-200 flex-1" onClick={() => handleApprove(leave.id)}>
                       <CheckCircle2 className="h-4 w-4" /> Approve
                     </Button>
                     <Button size="sm" variant="destructive" onClick={() => handleReject(leave.id)} className="flex-1">

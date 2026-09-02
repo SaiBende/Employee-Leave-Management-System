@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { api } from '@/api/client'
 import { StatusBadge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Select } from '@/components/ui/select'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import ApproverNote from '@/components/ApproverNote'
 import type { ApiResponse, LeaveResponse } from '@/types'
@@ -62,14 +62,18 @@ export default function LeaveHistory() {
               <div className="relative">
                 <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                 <Select
-                  className="pl-10"
                   value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value)}
+                  onValueChange={(val) => setTypeFilter(val)}
                 >
-                  <option value="">All Types</option>
-                  {['ANNUAL', 'SICK', 'PERSONAL', 'MATERNITY', 'PATERNITY', 'OTHER'].map((t) => (
-                    <option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>
-                  ))}
+                  <SelectTrigger className="pl-10">
+                    <SelectValue placeholder="All types..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Types</SelectItem>
+                    {['ANNUAL', 'SICK', 'PERSONAL', 'MATERNITY', 'PATERNITY', 'OTHER'].map((t) => (
+                      <SelectItem key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
             </div>
@@ -78,14 +82,18 @@ export default function LeaveHistory() {
               <div className="relative">
                 <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                 <Select
-                  className="pl-10"
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
+                  onValueChange={(val) => setStatusFilter(val)}
                 >
-                  <option value="">All Status</option>
-                  {['PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'].map((s) => (
-                    <option key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</option>
-                  ))}
+                  <SelectTrigger className="pl-10">
+                    <SelectValue placeholder="All statuses..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Status</SelectItem>
+                    {['PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'].map((s) => (
+                      <SelectItem key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
             </div>

@@ -127,7 +127,7 @@ export default function TeamBalances() {
                                     />
                                   </div>
                                   <div className="flex gap-1 mt-5">
-                                    <Button size="sm" variant="success" onClick={() => handleSave(b.id)}>
+                                    <Button size="sm" variant="default" className="bg-green-100 text-green-700 border-green-200" onClick={() => handleSave(b.id)}>
                                       <Save className="h-3 w-3" />
                                     </Button>
                                     <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>

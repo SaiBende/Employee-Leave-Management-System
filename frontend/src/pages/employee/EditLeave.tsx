@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import type { ApiResponse, LeaveResponse } from '@/types'
 import { AlertCircle, CalendarDays, MessageSquare, ArrowLeft } from 'lucide-react'
@@ -81,13 +81,17 @@ export default function EditLeave() {
               <div className="relative">
                 <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                 <Select
-                  className="pl-10"
                   value={form.leaveType}
-                  onChange={(e) => setForm({ ...form, leaveType: e.target.value })}
+                  onValueChange={(val) => setForm({ ...form, leaveType: val })}
                 >
-                  {leaveTypes.map((t) => (
-                    <option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>
-                  ))}
+                  <SelectTrigger className="pl-10">
+                    <SelectValue placeholder="Select type..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {leaveTypes.map((t) => (
+                      <SelectItem key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
             </div>
@@ -125,10 +129,10 @@ export default function EditLeave() {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <Button type="submit" disabled={submitting} size="xl">
+              <Button type="submit" disabled={submitting} size="lg">
                 {submitting ? 'Saving...' : 'Save Changes'}
               </Button>
-              <Button type="button" variant="outline" size="xl" onClick={() => navigate(-1)}>Cancel</Button>
+              <Button type="button" variant="outline" size="lg" onClick={() => navigate(-1)}>Cancel</Button>
             </div>
           </form>
         </CardContent>
