@@ -15,13 +15,6 @@ export default function AdminApprovals() {
   const [loading, setLoading] = useState(true)
   const [commentInput, setCommentInput] = useState<Record<number, string>>({})
 
-  const fetchPending = () => {
-    api.get<ApiResponse<LeaveResponse[]>>('/manager/pending-leaves')
-      .then((res) => setLeaves(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }
-
   useEffect(() => {
     Promise.all([
       api.get<ApiResponse<LeaveResponse[]>>('/manager/pending-leaves'),
