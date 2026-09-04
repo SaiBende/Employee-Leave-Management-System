@@ -1,19 +1,10 @@
-import { useEffect, useState } from 'react'
-import { api } from '@/api/client'
+import { useEmployeeProfile } from '@/hooks/use-leaves'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import type { ApiResponse, EmployeeResponse } from '@/types'
 import { User, Mail, Shield, Building2, Calendar, BadgeCheck } from 'lucide-react'
 
 export default function Profile() {
-  const [profile, setProfile] = useState<EmployeeResponse | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    api.get<ApiResponse<EmployeeResponse>>('/employees/me')
-      .then((res) => setProfile(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+  const { data, isLoading: loading } = useEmployeeProfile()
+  const profile = data?.data
 
   if (loading) {
     return (

@@ -1,24 +1,19 @@
-import { useEffect, useState } from 'react'
-import { api } from '@/api/client'
+import { useState } from 'react'
+import { useTeamBalances, useUpdateTeamBalances } from '@/hooks/use-leaves'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import type { ApiResponse, LeaveBalance } from '@/types'
+import type { LeaveBalance } from '@/types'
+import { toast } from 'sonner'
 import { Coins, Save, X, ChevronDown, ChevronUp } from 'lucide-react'
 
 export default function TeamBalances() {
-  const [balances, setBalances] = useState<LeaveBalance[]>([])
-  const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editForm, setEditForm] = useState({ totalDays: 0, usedDays: 0 })
   const [expandedEmployee, setExpandedEmployee] = useState<number | null>(null)
-
-  useEffect(() => {
-    api.get<ApiResponse<LeaveBalance[]>>('/leave-balances/team')
-      .then((res) => setBalances(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+  const { data, isLoading: loading } = useTeamBalances()
+  const balances = data?.data ?? []
+  const updateTeamBalances = useUpdateTeamBalances()
 
   const grouped = balances.reduce<Record<string, LeaveBalance[]>>((acc, b) => {
     const key = `${b.employeeId}-${b.employeeName}`
@@ -32,13 +27,15 @@ export default function TeamBalances() {
     setEditingId(balance.id)
   }
 
-  const handleSave = async (id: number) => {
+  const handleSave = async (balance: LeaveBalance) => {
     try {
-      const res = await api.put<ApiResponse<LeaveBalance>>(`/leave-balances/${id}`, editForm)
-      setBalances((prev) => prev.map((b) => (b.id === id ? res.data : b)))
+      await updateTeamBalances.mutateAsync([
+        { userId: balance.employeeId, leaveType: balance.leaveType, totalDays: editForm.totalDays },
+      ])
       setEditingId(null)
+      toast.success('Balance updated successfully')
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to update balance')
+      toast.error(err instanceof Error ? err.message : 'Failed to update balance')
     }
   }
 
@@ -127,7 +124,7 @@ export default function TeamBalances() {
                                     />
                                   </div>
                                   <div className="flex gap-1 mt-5">
-                                    <Button size="sm" variant="default" className="bg-green-100 text-green-700 border-green-200" onClick={() => handleSave(b.id)}>
+                                    <Button size="sm" variant="default" className="bg-green-100 text-green-700 border-green-200" onClick={() => handleSave(b)}>
                                       <Save className="h-3 w-3" />
                                     </Button>
                                     <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>

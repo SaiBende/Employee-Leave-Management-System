@@ -1,23 +1,14 @@
-import { useEffect, useState } from 'react'
-import { api } from '@/api/client'
 import { StatCard } from '@/components/StatCard'
 import { StatusBadge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import type { DashboardData, ApiResponse } from '@/types'
 import { Users, Clock, CalendarCheck, XCircle, TrendingUp } from 'lucide-react'
+import { useManagerDashboard } from '@/hooks/use-leaves'
 
 export default function ManagerDashboard() {
-  const [data, setData] = useState<DashboardData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data: res, isLoading } = useManagerDashboard()
+  const data = res?.data
 
-  useEffect(() => {
-    api.get<ApiResponse<DashboardData>>('/dashboard/manager')
-      .then((res) => setData(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-3">

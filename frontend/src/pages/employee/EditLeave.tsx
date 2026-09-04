@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { api } from '@/api/client'
+import { useLeave, useEditLeave } from '@/hooks/use-leaves'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
-import type { ApiResponse, LeaveResponse } from '@/types'
+import { toast } from 'sonner'
 import { AlertCircle, CalendarDays, MessageSquare, ArrowLeft } from 'lucide-react'
 
 const leaveTypes = ['ANNUAL', 'SICK', 'PERSONAL', 'MATERNITY', 'PATERNITY', 'OTHER']
@@ -15,30 +15,26 @@ export default function EditLeave() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ leaveType: 'ANNUAL', startDate: '', endDate: '', reason: '' })
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
+  const { data: leaveRes, isLoading: loading } = useLeave(id ?? '')
+  const leave = leaveRes?.data
+  const editLeave = useEditLeave()
 
   useEffect(() => {
-    api.get<ApiResponse<LeaveResponse>>(`/leaves/${id}`)
-      .then((res) => {
-        const l = res.data
-        setForm({ leaveType: l.leaveType, startDate: l.startDate, endDate: l.endDate, reason: l.reason })
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [id])
+    if (leave) {
+      setForm({ leaveType: leave.leaveType, startDate: leave.startDate, endDate: leave.endDate, reason: leave.reason })
+    }
+  }, [leave])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    setSubmitting(true)
     try {
-      await api.put<ApiResponse<LeaveResponse>>(`/leaves/${id}`, form)
+      await editLeave.mutateAsync({ id: id ?? '', data: form })
+      toast.success('Leave updated successfully')
       navigate(`/employee/leaves/${id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update')
-    } finally {
-      setSubmitting(false)
+      toast.error(err instanceof Error ? err.message : 'Failed to update')
     }
   }
 
@@ -129,8 +125,8 @@ export default function EditLeave() {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <Button type="submit" disabled={submitting} size="lg">
-                {submitting ? 'Saving...' : 'Save Changes'}
+              <Button type="submit" disabled={editLeave.isPending} size="lg">
+                {editLeave.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
               <Button type="button" variant="outline" size="lg" onClick={() => navigate(-1)}>Cancel</Button>
             </div>

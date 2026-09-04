@@ -1,48 +1,33 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '@/api/client'
+import { useLeaves } from '@/hooks/use-leaves'
 import { StatusBadge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import ApproverNote from '@/components/ApproverNote'
-import type { ApiResponse, LeaveResponse } from '@/types'
 import { Eye, Search, X, Clock, Filter } from 'lucide-react'
 
 export default function LeaveHistory() {
-  const [leaves, setLeaves] = useState<LeaveResponse[]>([])
-  const [loading, setLoading] = useState(true)
   const [typeFilter, setTypeFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
 
-  const fetchLeaves = async (type?: string, status?: string) => {
-    setLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (type) params.set('type', type)
-      if (status) params.set('status', status)
-      const qs = params.toString()
-      const res = await api.get<ApiResponse<LeaveResponse[]>>(`/leaves${qs ? `/search?${qs}` : ''}`)
-      setLeaves(res.data)
-    } catch {
-      const res = await api.get<ApiResponse<LeaveResponse[]>>('/leaves')
-      setLeaves(res.data)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const { data, isLoading: loading } = useLeaves()
+  const leaves = data?.data ?? []
 
-  useEffect(() => { fetchLeaves() }, [])
+  const filteredLeaves = leaves.filter((leave) => {
+    if (typeFilter && leave.leaveType !== typeFilter) return false
+    if (statusFilter && leave.status !== statusFilter) return false
+    return true
+  })
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    fetchLeaves(typeFilter, statusFilter)
   }
 
   const clearFilters = () => {
     setTypeFilter('')
     setStatusFilter('')
-    fetchLeaves()
   }
 
   return (
@@ -118,7 +103,7 @@ export default function LeaveHistory() {
           <div className="flex items-center justify-between">
             <CardTitle>All Requests</CardTitle>
             <span className="text-xs text-muted-foreground bg-secondary px-3 py-1 rounded-full">
-              {leaves.length} total
+              {filteredLeaves.length} total
             </span>
           </div>
         </CardHeader>
@@ -130,7 +115,7 @@ export default function LeaveHistory() {
                 <p className="text-xs text-muted-foreground">Loading...</p>
               </div>
             </div>
-          ) : leaves.length === 0 ? (
+          ) : filteredLeaves.length === 0 ? (
             <div className="text-center py-12">
               <Clock className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
               <p className="text-sm text-muted-foreground">No leave requests found</p>
@@ -140,7 +125,7 @@ export default function LeaveHistory() {
             </div>
           ) : (
             <div className="space-y-2">
-              {leaves.map((leave) => (
+              {filteredLeaves.map((leave) => (
                 <div key={leave.id} className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/50 hover:bg-secondary/50 transition-all group">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-foreground truncate">{leave.reason}</p>

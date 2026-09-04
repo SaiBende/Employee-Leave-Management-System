@@ -1,45 +1,38 @@
-import { useEffect, useState } from 'react'
-import { api } from '@/api/client'
+import { useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
+import { usePendingLeaves, useApproveLeave, useRejectLeave } from '@/hooks/use-leaves'
 import { StatusBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import LeaveCommentThread from '@/components/LeaveCommentThread'
-import type { ApiResponse, LeaveResponse } from '@/types'
+import { toast } from 'sonner'
 import { CheckCircle2, XCircle, MessageSquare, Clock } from 'lucide-react'
 
 export default function PendingApprovals() {
   const { user } = useAuth()
-  const [leaves, setLeaves] = useState<LeaveResponse[]>([])
-  const [loading, setLoading] = useState(true)
   const [commentInput, setCommentInput] = useState<Record<number, string>>({})
-
-  const fetchPending = () => {
-    api.get<ApiResponse<LeaveResponse[]>>('/manager/pending-leaves')
-      .then((res) => setLeaves(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }
-
-  useEffect(() => { fetchPending() }, [])
+  const { data, isLoading: loading } = usePendingLeaves()
+  const leaves = data?.data ?? []
+  const approveLeave = useApproveLeave()
+  const rejectLeave = useRejectLeave()
 
   const handleApprove = async (id: number) => {
     const comment = commentInput[id] || ''
     try {
-      await api.put(`/manager/leaves/${id}/approve`, { comment })
-      setLeaves((prev) => prev.filter((l) => l.id !== id))
+      await approveLeave.mutateAsync({ id: String(id), comment })
+      toast.success('Leave approved successfully')
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to approve')
+      toast.error(err instanceof Error ? err.message : 'Failed to approve')
     }
   }
 
   const handleReject = async (id: number) => {
     const comments = commentInput[id] || ''
     try {
-      await api.put(`/manager/leaves/${id}/reject`, { comments })
-      setLeaves((prev) => prev.filter((l) => l.id !== id))
+      await rejectLeave.mutateAsync({ id: String(id), comment: comments })
+      toast.success('Leave rejected successfully')
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to reject')
+      toast.error(err instanceof Error ? err.message : 'Failed to reject')
     }
   }
 

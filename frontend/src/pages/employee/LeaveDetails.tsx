@@ -1,27 +1,20 @@
-import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
-import { api } from '@/api/client'
+import { useLeave, useCancelLeave } from '@/hooks/use-leaves'
 import { StatusBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import LeaveCommentThread from '@/components/LeaveCommentThread'
-import type { ApiResponse, LeaveResponse } from '@/types'
+import { toast } from 'sonner'
 import { ArrowLeft, Edit, Trash2, CalendarDays, MessageSquare, Clock, FileText } from 'lucide-react'
 
 export default function LeaveDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const [leave, setLeave] = useState<LeaveResponse | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    api.get<ApiResponse<LeaveResponse>>(`/leaves/${id}`)
-      .then((res) => setLeave(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [id])
+  const { data, isLoading: loading } = useLeave(id ?? '')
+  const leave = data?.data
+  const cancelLeave = useCancelLeave()
 
   const handleCancel = async () => {
     const isApproved = leave?.status === 'APPROVED'
@@ -29,10 +22,11 @@ export default function LeaveDetails() {
       ? 'Cancel this approved leave? Your leave balance for those days will be restored.'
       : 'Are you sure you want to cancel this leave request?')) return
     try {
-      await api.delete(`/leaves/${id}`)
+      await cancelLeave.mutateAsync(id ?? '')
       navigate('/employee/leaves')
+      toast.success('Leave cancelled successfully')
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to cancel')
+      toast.error(err instanceof Error ? err.message : 'Failed to cancel')
     }
   }
 

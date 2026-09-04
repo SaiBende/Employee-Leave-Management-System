@@ -1,33 +1,29 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { useAdminDepartments, useAddDepartment } from '@/hooks/use-leaves'
 import { api } from '@/api/client'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '@/hooks/use-leaves'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import type { ApiResponse as ApiResp } from '@/types'
+import { toast } from 'sonner'
 import { Building2, Plus, Trash2 } from 'lucide-react'
 
 export default function AdminDepartments() {
-  const [departments, setDepartments] = useState<{ id: number; name: string }[]>([])
-  const [loading, setLoading] = useState(true)
   const [newName, setNewName] = useState('')
-
-  const load = () =>
-    api.get<ApiResp<{ id: number; name: string }[]>>('/admin/departments')
-      .then((res) => setDepartments(res.data))
-      .catch(console.error)
-
-  useEffect(() => {
-    load().finally(() => setLoading(false))
-  }, [])
+  const queryClient = useQueryClient()
+  const { data, isLoading: loading } = useAdminDepartments()
+  const departments = data?.data ?? []
+  const addDepartment = useAddDepartment()
 
   const handleAdd = async () => {
     if (!newName.trim()) return
     try {
-      await api.post('/admin/departments', { name: newName })
+      await addDepartment.mutateAsync(newName)
       setNewName('')
-      load()
+      toast.success('Department created successfully')
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to create department')
+      toast.error(err instanceof Error ? err.message : 'Failed to create department')
     }
   }
 
@@ -35,9 +31,10 @@ export default function AdminDepartments() {
     if (!confirm('Delete this department?')) return
     try {
       await api.delete(`/admin/departments/${id}`)
-      load()
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminDepartments })
+      toast.success('Department deleted successfully')
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
     }
   }
 

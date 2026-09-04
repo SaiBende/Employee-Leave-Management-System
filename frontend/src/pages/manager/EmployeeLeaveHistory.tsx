@@ -1,28 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
-import { api } from '@/api/client'
+import { useEmployeeLeaves } from '@/hooks/use-leaves'
 import { StatusBadge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import LeaveCommentThread from '@/components/LeaveCommentThread'
 import ApproverNote from '@/components/ApproverNote'
-import type { ApiResponse, LeaveResponse } from '@/types'
 import { ArrowLeft, Clock, MessageSquare } from 'lucide-react'
 
 export default function EmployeeLeaveHistory() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const [leaves, setLeaves] = useState<LeaveResponse[]>([])
   const [openThread, setOpenThread] = useState<number | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    api.get<ApiResponse<LeaveResponse[]>>(`/manager/employees/${id}/leaves`)
-      .then((res) => setLeaves(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [id])
+  const { data, isLoading: loading } = useEmployeeLeaves(id ?? '')
+  const leaves = data?.data ?? []
 
   if (loading) {
     return (

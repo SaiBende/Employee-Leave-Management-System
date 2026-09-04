@@ -92,6 +92,11 @@ export interface LeaveBalance {
   year: number
 }
 
+export interface Dept {
+  id: number
+  name: string
+}
+
 export interface ApiResponse<T = unknown> {
   success: boolean
   message: string

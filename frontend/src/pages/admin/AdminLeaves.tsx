@@ -1,30 +1,22 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { api } from '@/api/client'
 import { StatusBadge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import LeaveCommentThread from '@/components/LeaveCommentThread'
 import ApproverNote from '@/components/ApproverNote'
-import type { ApiResponse, LeaveResponse } from '@/types'
 import { Clock, MessageSquare } from 'lucide-react'
+import { useAdminLeaves } from '@/hooks/use-leaves'
 
 export default function AdminLeaves() {
   const { user } = useAuth()
-  const [leaves, setLeaves] = useState<LeaveResponse[]>([])
+  const { data: res, isLoading } = useAdminLeaves()
+  const leaves = res?.data ?? []
   const [filter, setFilter] = useState('ALL')
   const [openThread, setOpenThread] = useState<number | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    api.get<ApiResponse<LeaveResponse[]>>('/admin/leaves')
-      .then((res) => setLeaves(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
 
   const filtered = filter === 'ALL' ? leaves : leaves.filter((l) => l.status === filter)
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-3">

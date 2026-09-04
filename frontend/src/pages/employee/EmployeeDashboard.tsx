@@ -1,28 +1,16 @@
-import { useEffect, useState } from 'react'
-import { api } from '@/api/client'
 import { StatCard } from '@/components/StatCard'
 import { StatusBadge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import type { DashboardData, ApiResponse, LeaveBalance } from '@/types'
 import { CalendarCheck, Clock, XCircle, FileText, TrendingUp, Coins } from 'lucide-react'
+import { useEmployeeDashboard, useMyBalances } from '@/hooks/use-leaves'
 
 export default function EmployeeDashboard() {
-  const [data, setData] = useState<DashboardData | null>(null)
-  const [balances, setBalances] = useState<LeaveBalance[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: dashData, isLoading: dashLoading } = useEmployeeDashboard()
+  const { data: balData, isLoading: balLoading } = useMyBalances()
 
-  useEffect(() => {
-    Promise.all([
-      api.get<ApiResponse<DashboardData>>('/dashboard/employee'),
-      api.get<ApiResponse<LeaveBalance[]>>('/leave-balances/me'),
-    ])
-      .then(([dash, bal]) => {
-        setData(dash.data)
-        setBalances(bal.data)
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+  const data = dashData?.data
+  const balances = balData?.data ?? []
+  const loading = dashLoading || balLoading
 
   if (loading) {
     return (

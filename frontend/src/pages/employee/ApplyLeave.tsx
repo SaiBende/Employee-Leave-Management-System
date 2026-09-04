@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api } from '@/api/client'
+import { useMyBalances, useApplyLeave } from '@/hooks/use-leaves'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import type { ApiResponse, LeaveResponse, LeaveBalance } from '@/types'
+import { toast } from 'sonner'
 import { CalendarPlus, AlertCircle, CheckCircle2, ArrowLeft, CalendarDays, MessageSquare, Coins } from 'lucide-react'
 
 const leaveTypes = ['ANNUAL', 'SICK', 'PERSONAL', 'MATERNITY', 'PATERNITY', 'OTHER']
@@ -13,35 +13,29 @@ const leaveTypes = ['ANNUAL', 'SICK', 'PERSONAL', 'MATERNITY', 'PATERNITY', 'OTH
 export default function ApplyLeave() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ leaveType: 'ANNUAL', startDate: '', endDate: '', reason: '' })
-  const [balances, setBalances] = useState<LeaveBalance[]>([])
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    api.get<ApiResponse<LeaveBalance[]>>('/leave-balances/me')
-      .then((res) => setBalances(res.data))
-      .catch(console.error)
-  }, [])
+  const { data: balancesRes } = useMyBalances()
+  const balances = balancesRes?.data ?? []
+  const applyLeave = useApplyLeave()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setSuccess('')
-    setLoading(true)
 
     try {
-      await api.post<ApiResponse<LeaveResponse>>('/leaves', {
+      await applyLeave.mutateAsync({
         ...form,
         startDate: form.startDate,
         endDate: form.endDate,
       })
+      toast.success('Leave applied successfully!')
       setSuccess('Leave applied successfully!')
       setTimeout(() => navigate('/employee/leaves'), 1500)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to apply leave')
-    } finally {
-      setLoading(false)
+      toast.error(err instanceof Error ? err.message : 'Failed to apply leave')
     }
   }
 
@@ -165,8 +159,8 @@ export default function ApplyLeave() {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <Button type="submit" size="lg" className="flex-1" disabled={loading}>
-                {loading ? (
+              <Button type="submit" size="lg" className="flex-1" disabled={applyLeave.isPending}>
+                {applyLeave.isPending ? (
                   <span className="flex items-center gap-2">
                     <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                     Submitting...

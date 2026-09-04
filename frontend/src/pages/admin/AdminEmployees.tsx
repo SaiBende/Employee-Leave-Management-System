@@ -1,28 +1,24 @@
-import { useEffect, useState } from 'react'
-import { api } from '@/api/client'
+import { useQueryClient } from '@tanstack/react-query'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import type { ApiResponse as ApiResp, EmployeeResponse } from '@/types'
 import { Users, Mail, Building2, Shield, Trash2, UserCog } from 'lucide-react'
+import { useAdminEmployees, queryKeys } from '@/hooks/use-leaves'
+import { api } from '@/api/client'
+import { toast } from 'sonner'
 
 export default function AdminEmployees() {
-  const [employees, setEmployees] = useState<EmployeeResponse[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    api.get<ApiResp<EmployeeResponse[]>>('/admin/employees')
-      .then((res) => setEmployees(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+  const { data: res, isLoading } = useAdminEmployees()
+  const employees = res?.data ?? []
+  const queryClient = useQueryClient()
 
   const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this employee?')) return
     try {
       await api.delete(`/employees/${id}`)
-      setEmployees((prev) => prev.filter((e) => e.id !== id))
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminEmployees })
+      toast.success('Employee deleted successfully')
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
     }
   }
 
@@ -30,7 +26,7 @@ export default function AdminEmployees() {
   const getReport = (managerId: number) => employees.filter((e) => e.managerId === managerId)
   const unassigned = employees.filter((e) => e.role === 'EMPLOYEE' && !e.managerId)
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-3">
@@ -41,7 +37,7 @@ export default function AdminEmployees() {
     )
   }
 
-  const EmployeeRow = ({ emp, isManager }: { emp: EmployeeResponse; isManager?: boolean }) => (
+  const EmployeeRow = ({ emp, isManager }: { emp: typeof employees[0]; isManager?: boolean }) => (
     <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/50 hover:bg-secondary/50 transition-all">
       <div className="flex items-center gap-4">
         <div className={isManager ? "h-10 w-10 rounded-full bg-purple-500/20 border border-purple-300 flex items-center justify-center text-purple-700 font-semibold shadow-sm" : "h-10 w-10 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground font-semibold shadow-md"}>

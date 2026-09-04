@@ -1,21 +1,12 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '@/api/client'
+import { useManagerEmployees } from '@/hooks/use-leaves'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import type { ApiResponse, EmployeeResponse } from '@/types'
 import { Eye, Users, UserPlus, Building2, Mail } from 'lucide-react'
 
 export default function TeamMembers() {
-  const [employees, setEmployees] = useState<EmployeeResponse[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    api.get<ApiResponse<EmployeeResponse[]>>('/manager/employees')
-      .then((res) => setEmployees(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+  const { data, isLoading: loading } = useManagerEmployees()
+  const employees = data?.data ?? []
 
   if (loading) {
     return (

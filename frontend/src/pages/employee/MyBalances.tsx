@@ -1,25 +1,24 @@
-import { useEffect, useState } from 'react'
-import { api } from '@/api/client'
-import type { ApiResponse, LeaveBalance } from '@/types'
+import { useMyBalances } from '@/hooks/use-leaves'
 
 export default function MyBalances() {
-  const [balances, setBalances] = useState<LeaveBalance[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data, isLoading, error } = useMyBalances()
+  const balances = data?.data ?? []
 
-  useEffect(() => {
-    api.get<ApiResponse<LeaveBalance[]>>('/leave-balances/me')
-      .then((res) => setBalances(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
           <p className="text-sm text-muted-foreground">Loading balances...</p>
         </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-sm text-destructive">Failed to load balances</p>
       </div>
     )
   }

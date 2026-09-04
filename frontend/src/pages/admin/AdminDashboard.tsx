@@ -1,23 +1,14 @@
-import { useEffect, useState } from 'react'
-import { api } from '@/api/client'
 import { StatCard } from '@/components/StatCard'
 import { StatusBadge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import type { DashboardData, ApiResponse } from '@/types'
 import { Users, Clock, CalendarCheck, XCircle, TrendingUp, Building2 } from 'lucide-react'
+import { useAdminDashboard } from '@/hooks/use-leaves'
 
 export default function AdminDashboard() {
-  const [data, setData] = useState<DashboardData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data: res, isLoading } = useAdminDashboard()
+  const data = res?.data
 
-  useEffect(() => {
-    api.get<ApiResponse<DashboardData>>('/admin/dashboard')
-      .then((res) => setData(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-3">

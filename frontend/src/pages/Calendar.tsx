@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
-import { api } from '@/api/client'
+import { useMemo, useState } from 'react'
+import { useLeaveCalendar } from '@/hooks/use-leaves'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { StatusBadge } from '@/components/ui/badge'
 import ApproverNote from '@/components/ApproverNote'
 import { cn } from '@/lib/utils'
-import type { ApiResponse, LeaveResponse } from '@/types'
+import type { LeaveResponse } from '@/types'
 import { CalendarDays, ChevronLeft, ChevronRight, CalendarClock } from 'lucide-react'
 
 const statusStyles: Record<string, { bg: string; dot: string; label: string }> = {
@@ -18,17 +18,10 @@ const statusStyles: Record<string, { bg: string; dot: string; label: string }> =
 const weekdayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export default function Calendar() {
-  const [leaves, setLeaves] = useState<LeaveResponse[]>([])
-  const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(() => new Date())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
-
-  useEffect(() => {
-    api.get<ApiResponse<LeaveResponse[]>>('/leaves/calendar')
-      .then((res) => setLeaves(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+  const { data, isLoading: loading } = useLeaveCalendar()
+  const leaves = data?.data ?? []
 
   const leavesByDate = useMemo(() => {
     const map: Record<string, LeaveResponse[]> = {}
