@@ -1,0 +1,8 @@
+target/
+.mvn/
+.git/
+.gitignore
+.idea/
+*.iml
+HELP.md
+*.log
