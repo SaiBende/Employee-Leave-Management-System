@@ -57,7 +57,7 @@ export default function RegisterPage() {
 
   return (
     <Card className="border-0 shadow-2xl shadow-primary/10 overflow-hidden">
-      <div className="h-1.5 w-full bg-gradient-to-r from-primary via-purple-500 to-cyan-500" />
+      <div className="h-1.5 w-full bg-gradient-to-r from-primary via-primary/70 to-primary/60" />
       <CardHeader className="text-center pt-8 pb-6">
         <div className="mx-auto mb-4 p-3 rounded-2xl bg-gradient-primary shadow-lg shadow-primary/30 w-fit">
           <UserPlus className="h-6 w-6 text-primary-foreground" />

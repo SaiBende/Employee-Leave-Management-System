@@ -62,7 +62,7 @@ export default function EditLeave() {
       </div>
 
       <Card className="border-0 shadow-md overflow-hidden">
-        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-purple-500/40 to-cyan-500/40" />
+        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-primary/20 to-primary/15" />
         <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
@@ -78,7 +78,7 @@ export default function EditLeave() {
                 <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                 <Select
                   value={form.leaveType}
-                  onValueChange={(val) => setForm({ ...form, leaveType: val })}
+                  onValueChange={(val) => { if (val !== null) setForm({ ...form, leaveType: val }) }}
                 >
                   <SelectTrigger className="pl-10">
                     <SelectValue placeholder="Select type..." />

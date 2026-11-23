@@ -56,7 +56,7 @@ export default function AddEmployee() {
       </div>
 
       <Card className="border-0 shadow-md overflow-hidden">
-        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-purple-500/40 to-cyan-500/40" />
+        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-primary/20 to-primary/15" />
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-gradient-primary shadow-md">
@@ -116,7 +116,7 @@ export default function AddEmployee() {
                 <div className="relative">
                   <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                   <Select value={String(form.departmentId)}
-                    onValueChange={(val) => setForm({ ...form, departmentId: Number(val) })}>
+                    onValueChange={(val) => { if (val !== null) setForm({ ...form, departmentId: Number(val) }) }}>
                     <SelectTrigger className="pl-10">
                       <SelectValue placeholder="Select department..." />
                     </SelectTrigger>
@@ -132,7 +132,7 @@ export default function AddEmployee() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Role</label>
                 <Select value={form.role}
-                  onValueChange={(val) => setForm({ ...form, role: val })}>
+                  onValueChange={(val) => { if (val !== null) setForm({ ...form, role: val }) }}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select role..." />
                   </SelectTrigger>

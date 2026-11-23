@@ -131,7 +131,7 @@ export default function AdminAddEmployee() {
                 <div className="relative">
                   <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                   <Select value={String(form.departmentId)}
-                    onValueChange={(val) => setForm({ ...form, departmentId: Number(val) })}>
+                    onValueChange={(val) => { if (val !== null) setForm({ ...form, departmentId: Number(val) }) }}>
                     <SelectTrigger className="pl-10">
                       <SelectValue placeholder="Select department..." />
                     </SelectTrigger>
@@ -147,7 +147,7 @@ export default function AdminAddEmployee() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Role</label>
                 <Select value={form.role}
-                  onValueChange={(val) => setForm({ ...form, role: val })}>
+                  onValueChange={(val) => { if (val !== null) setForm({ ...form, role: val }) }}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select role..." />
                   </SelectTrigger>
@@ -164,7 +164,7 @@ export default function AdminAddEmployee() {
               <div className="relative">
                 <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                 <Select value={String(form.managerId)}
-                  onValueChange={(val) => setForm({ ...form, managerId: Number(val) })}>
+                  onValueChange={(val) => { if (val !== null) setForm({ ...form, managerId: Number(val) }) }}>
                   <SelectTrigger className="pl-10">
                     <SelectValue placeholder="Select manager..." />
                   </SelectTrigger>

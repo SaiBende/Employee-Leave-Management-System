@@ -9,7 +9,7 @@ export default function NotFound() {
       <div className="absolute bottom-0 -right-40 w-96 h-96 bg-purple-500/10 rounded-full mix-blend-multiply blur-3xl" />
       
       <div className="text-center space-y-6 relative z-10 px-4">
-        <div className="text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-cyan-500">
+        <div className="text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary/70 to-primary/60">
           404
         </div>
         <div className="space-y-2">

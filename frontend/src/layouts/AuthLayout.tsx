@@ -6,7 +6,7 @@ export default function AuthLayout() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-primary/5 via-background to-background relative overflow-hidden">
       {/* Decorative blobs */}
       <div className="absolute top-0 -left-40 w-96 h-96 bg-primary/10 rounded-full mix-blend-multiply blur-3xl" />
-      <div className="absolute bottom-0 -right-40 w-96 h-96 bg-purple-500/10 rounded-full mix-blend-multiply blur-3xl" />
+      <div className="absolute bottom-0 -right-40 w-96 h-96 bg-primary/15 rounded-full mix-blend-multiply blur-3xl" />
 
       {/* Branding */}
       <div className="relative z-10 pt-8 px-4 text-center">
@@ -14,7 +14,7 @@ export default function AuthLayout() {
           <div className="h-10 w-10 rounded-xl bg-gradient-primary shadow-lg shadow-primary/30 flex items-center justify-center">
             <FileText className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="text-xl font-bold text-foreground">Employee Leave Management System</span>
+          <span className="text-xl font-bold text-foreground">Leave Manager</span>
         </Link>
       </div>
 
@@ -28,7 +28,7 @@ export default function AuthLayout() {
       {/* Footer */}
       <div className="relative z-10 pb-4 text-center">
         <p className="text-xs text-muted-foreground">
-          &copy; 2026 Employee Leave Management System. All rights reserved.
+          &copy; 2026 Leave Manager. All rights reserved.
         </p>
       </div>
     </div>

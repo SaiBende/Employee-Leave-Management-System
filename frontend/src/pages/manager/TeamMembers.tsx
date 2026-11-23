@@ -34,7 +34,7 @@ export default function TeamMembers() {
       </div>
 
       <Card className="border-0 shadow-md overflow-hidden">
-        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-purple-500/40 to-cyan-500/40" />
+        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-primary/20 to-primary/15" />
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Team Members</CardTitle>
@@ -71,7 +71,7 @@ export default function TeamMembers() {
                     </div>
                   </div>
                   <Link to={`/manager/employees/${emp.id}/leaves`}>
-                    <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button variant="outline" size="sm" className="whitespace-nowrap">
                       <Eye className="h-4 w-4" /> View Leaves
                     </Button>
                   </Link>

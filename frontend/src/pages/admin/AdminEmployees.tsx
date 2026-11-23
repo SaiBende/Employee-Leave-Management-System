@@ -56,8 +56,14 @@ export default function AdminEmployees() {
           </div>
         </div>
       </div>
-      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDelete(emp.id)}>
-        <Trash2 className="h-4 w-4" />
+      <Button
+        variant="outline"
+        size="sm"
+        className="text-destructive border-destructive/30 hover:text-destructive hover:bg-destructive/10 shrink-0"
+        onClick={() => handleDelete(emp.id)}
+        title={`Delete ${emp.name}`}
+      >
+        <Trash2 className="h-3.5 w-3.5" /> Delete
       </Button>
     </div>
   )

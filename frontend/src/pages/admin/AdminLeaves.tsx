@@ -4,8 +4,9 @@ import { StatusBadge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import LeaveCommentThread from '@/components/LeaveCommentThread'
 import ApproverNote from '@/components/ApproverNote'
-import { Clock, MessageSquare } from 'lucide-react'
+import { Clock, MessageSquare, ChevronDown } from 'lucide-react'
 import { useAdminLeaves } from '@/hooks/use-leaves'
+import { cn } from '@/lib/utils'
 
 export default function AdminLeaves() {
   const { user } = useAuth()
@@ -50,7 +51,7 @@ export default function AdminLeaves() {
       </div>
 
       <Card className="border-0 shadow-md overflow-hidden">
-        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-purple-500/40 to-cyan-500/40" />
+        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-primary/20 to-primary/15" />
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Leave Requests</CardTitle>
@@ -89,10 +90,14 @@ export default function AdminLeaves() {
                       <ApproverNote leave={leave} />
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                        <MessageSquare className="h-3 w-3" /> {leave.comments?.length ?? 0}
+                      <span className={cn(
+                        "inline-flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-md",
+                        (leave.comments?.length ?? 0) > 0 ? "text-primary bg-primary/10" : "text-muted-foreground"
+                      )}>
+                        <MessageSquare className="h-3 w-3" /> {leave.comments?.length ?? 0} Comments
                       </span>
                       <StatusBadge status={leave.status} />
+                      <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", openThread === leave.id && "rotate-180")} />
                     </div>
                   </button>
                   {openThread === leave.id && (

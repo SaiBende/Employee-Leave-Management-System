@@ -74,7 +74,7 @@ export default function LeaveDetails() {
       </div>
 
       <Card className="border-0 shadow-md overflow-hidden">
-        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-purple-500/40 to-cyan-500/40" />
+        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-primary/20 to-primary/15" />
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Request Information</CardTitle>

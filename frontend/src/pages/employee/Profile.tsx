@@ -36,7 +36,7 @@ export default function Profile() {
       </div>
 
       <Card className="border-0 shadow-md overflow-hidden">
-        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-purple-500/40 to-cyan-500/40" />
+        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-primary/20 to-primary/15" />
         <div className="p-8 pb-0 text-center">
           <div className="inline-flex mb-4">
             <div className="h-24 w-24 rounded-full bg-gradient-primary shadow-xl shadow-primary/30 flex items-center justify-center relative">
@@ -54,7 +54,7 @@ export default function Profile() {
       </Card>
 
       <Card className="border-0 shadow-md overflow-hidden">
-        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-purple-500/40 to-cyan-500/40" />
+        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-primary/20 to-primary/15" />
         <CardHeader>
           <CardTitle>Account Details</CardTitle>
         </CardHeader>

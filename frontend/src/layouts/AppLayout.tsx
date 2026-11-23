@@ -71,13 +71,13 @@ export default function AppLayout() {
       )}>
         {/* Logo */}
         <div className="flex items-center justify-between p-5 border-b border-border">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-gradient-primary shadow-lg shadow-primary/30 flex items-center justify-center">
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="h-9 w-9 rounded-xl bg-gradient-primary shadow-lg shadow-primary/30 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
               <FileText className="h-4 w-4 text-primary-foreground" />
             </div>
-            <div>
-              <p className="font-bold text-foreground leading-tight">Employee Leave Management System</p>
-              <p className="text-[10px] text-muted-foreground">{user?.email}</p>
+            <div className="min-w-0">
+              <p className="font-bold text-foreground leading-tight text-sm">Leave Manager</p>
+              <p className="text-[10px] text-muted-foreground truncate max-w-[150px]">{user?.email}</p>
             </div>
           </Link>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-secondary transition-colors">
@@ -140,7 +140,7 @@ export default function AppLayout() {
             <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center">
               <FileText className="h-4 w-4 text-primary-foreground" />
             </div>
-            <h1 className="text-lg font-semibold text-foreground">Employee Leave Management System</h1>
+            <h1 className="text-base font-semibold text-foreground">Leave Manager</h1>
           </div>
           <div className="flex items-center gap-4">
             {/* Theme Toggle */}
@@ -176,7 +176,7 @@ export default function AppLayout() {
             <div className="h-7 w-7 rounded-lg bg-gradient-primary flex items-center justify-center">
               <FileText className="h-3.5 w-3.5 text-primary-foreground" />
             </div>
-            <h1 className="font-semibold text-foreground">Employee Leave Management System</h1>
+            <h1 className="font-semibold text-foreground text-sm">Leave Manager</h1>
           </div>
         </header>
 

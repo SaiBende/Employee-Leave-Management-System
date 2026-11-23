@@ -39,7 +39,7 @@ export default function LeaveHistory() {
 
       {/* Filters */}
       <Card className="border-0 shadow-md overflow-hidden">
-        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-purple-500/40 to-cyan-500/40" />
+        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-primary/20 to-primary/15" />
         <CardContent className="pt-6">
           <form onSubmit={handleSearch} className="flex flex-wrap gap-3 items-end">
             <div className="flex-1 min-w-[160px] space-y-1.5">
@@ -48,7 +48,7 @@ export default function LeaveHistory() {
                 <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                 <Select
                   value={typeFilter}
-                  onValueChange={(val) => setTypeFilter(val)}
+                  onValueChange={(val) => setTypeFilter(val ?? '')}
                 >
                   <SelectTrigger className="pl-10">
                     <SelectValue placeholder="All types..." />
@@ -68,7 +68,7 @@ export default function LeaveHistory() {
                 <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                 <Select
                   value={statusFilter}
-                  onValueChange={(val) => setStatusFilter(val)}
+                  onValueChange={(val) => setStatusFilter(val ?? '')}
                 >
                   <SelectTrigger className="pl-10">
                     <SelectValue placeholder="All statuses..." />
@@ -98,7 +98,7 @@ export default function LeaveHistory() {
 
       {/* Leave list */}
       <Card className="border-0 shadow-md overflow-hidden">
-        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-purple-500/40 to-cyan-500/40" />
+        <div className="h-1 w-full bg-gradient-to-r from-primary/40 via-primary/20 to-primary/15" />
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>All Requests</CardTitle>
@@ -137,8 +137,8 @@ export default function LeaveHistory() {
                   <div className="flex items-center gap-3 ml-4 shrink-0">
                     <StatusBadge status={leave.status} />
                     <Link to={`/employee/leaves/${leave.id}`}>
-                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Eye className="h-4 w-4" />
+                      <Button variant="outline" size="sm" className="whitespace-nowrap">
+                        <Eye className="h-4 w-4" /> Details
                       </Button>
                     </Link>
                   </div>

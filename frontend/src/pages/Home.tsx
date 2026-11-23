@@ -139,20 +139,20 @@ export default function Home() {
 
         <div className="container mx-auto px-4 py-20 md:py-32 relative z-10">
           <div className="max-w-2xl lg:max-w-xl space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-primary/20 via-primary/10 to-purple-500/10 border border-primary/20 text-sm text-primary font-medium shadow-lg shadow-primary/5">
-              <Sparkles className="h-3.5 w-3.5 text-purple-500" />
-              <span className="bg-gradient-to-r from-primary to-purple-500 text-transparent bg-clip-text">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-primary/20 via-primary/10 to-primary/5 border border-primary/20 text-sm text-primary font-medium shadow-lg shadow-primary/5">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span className="bg-gradient-to-r from-primary to-primary/70 text-transparent bg-clip-text">
                 Simplify Leave Management
               </span>
             </div>
             
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-foreground tracking-tight leading-[0.95]">
               Leave{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-cyan-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary/70 to-primary/60">
                 Management
               </span>
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 via-primary to-purple-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary/70 to-primary/50">
                 Made Simple
               </span>
             </h1>
@@ -164,7 +164,7 @@ export default function Home() {
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link to="/register">
-                <Button size="lg" className="rounded-full text-base px-8 h-12 shadow-2xl shadow-primary/40 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 border-0">
+                <Button size="lg" className="rounded-full text-base px-8 h-12 shadow-2xl shadow-primary/40 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 border-0">
                   Start Free Trial <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>
