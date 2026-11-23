@@ -32,8 +32,8 @@ Internet :80 / :443
    `:latest` and `:<git-sha>` tags to GHCR.
 2. **deploy** – uploads `deploy/docker-compose.yml` and `deploy/Caddyfile`, writes
    `~/ems/.env`, logs in to GHCR with the short-lived `GITHUB_TOKEN`, runs
-   `docker compose pull` and `docker compose up -d --wait`, then verifies both
-   HTTPS endpoints.
+   `docker compose pull` and `docker compose up -d --wait`, reloads Caddy so
+   Caddyfile changes take effect, then verifies both HTTPS endpoints.
 
 Runs are queued (not cancelled) so a deploy is never interrupted halfway.
 

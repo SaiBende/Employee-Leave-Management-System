@@ -116,7 +116,7 @@ jobs:
           printf '%s' "$GHCR_TOKEN" | ssh -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" \
             "docker login ghcr.io -u '$GHCR_USER' --password-stdin"
           ssh -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" \
-            "cd ~/ems && docker compose pull && docker compose up -d --remove-orphans --wait --wait-timeout 240 && docker image prune -af && docker compose ps"
+            "cd ~/ems && docker compose pull && docker compose up -d --remove-orphans --wait --wait-timeout 240 && docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile && docker image prune -af && docker compose ps"
 
       - name: Verify HTTPS
         run: |
