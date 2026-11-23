@@ -1,0 +1,23 @@
+# HTTPS reverse proxy for the Employee Leave Management System.
+# Certificates are issued and renewed automatically by Caddy (Let's Encrypt).
+#
+#   https://ems.saibende.in      -> frontend (nginx SPA), /api -> backend
+#   https://api-ems.saibende.in  -> backend (REST API + Swagger)
+
+ems.saibende.in {
+	encode zstd gzip
+
+	@backend path /api/* /swagger-ui* /v3/api-docs*
+	handle @backend {
+		reverse_proxy backend:8080
+	}
+
+	handle {
+		reverse_proxy frontend:80
+	}
+}
+
+api-ems.saibende.in {
+	encode zstd gzip
+	reverse_proxy backend:8080
+}

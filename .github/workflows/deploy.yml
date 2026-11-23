@@ -82,13 +82,13 @@ jobs:
           chmod 600 ~/.ssh/ec2_key
           ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
 
-      - name: Upload compose file
+      - name: Upload compose file and Caddyfile
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
         run: |
           ssh -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" 'mkdir -p ~/ems'
-          scp -i ~/.ssh/ec2_key deploy/docker-compose.yml "$EC2_USER@$EC2_HOST:~/ems/docker-compose.yml"
+          scp -i ~/.ssh/ec2_key deploy/docker-compose.yml deploy/Caddyfile "$EC2_USER@$EC2_HOST:~/ems/"
 
       - name: Write production environment
         env:
@@ -103,7 +103,6 @@ jobs:
           POSTGRES_USER=admin
           POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
           JWT_SECRET=${JWT_SECRET}
-          APP_PORT=80
           IMAGE_TAG=${IMAGE_TAG}
           EOF
 
@@ -118,3 +117,9 @@ jobs:
             "docker login ghcr.io -u '$GHCR_USER' --password-stdin"
           ssh -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" \
             "cd ~/ems && docker compose pull && docker compose up -d --remove-orphans --wait --wait-timeout 240 && docker image prune -af && docker compose ps"
+
+      - name: Verify HTTPS
+        run: |
+          curl -fsS --retry 12 --retry-delay 10 --retry-all-errors --max-time 20 https://ems.saibende.in/api/health
+          curl -fsS --retry 12 --retry-delay 10 --retry-all-errors --max-time 20 -o /dev/null -w 'frontend HTTP %{http_code}\n' https://ems.saibende.in/
+          curl -fsS --retry 12 --retry-delay 10 --retry-all-errors --max-time 20 -o /dev/null -w 'api HTTP %{http_code}\n' https://api-ems.saibende.in/api/health
