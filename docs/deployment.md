@@ -73,6 +73,10 @@ Elastic IP:
 
 The apex and `www` records are unaffected.
 
+The bare Elastic IP (`http://15.252.190.98`) redirects to
+`https://ems.saibende.in`, so old bookmarks still work. If the Elastic IP ever
+changes, update that block in `deploy/Caddyfile`.
+
 Caddy obtains and renews certificates automatically once DNS resolves and ports
 80/443 are reachable. No manual certificate steps are required. To force a new
 certificate (for example after changing a hostname), remove the `ems_caddy_data`

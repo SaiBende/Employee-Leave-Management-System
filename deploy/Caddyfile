@@ -21,3 +21,8 @@ api-ems.saibende.in {
 	encode zstd gzip
 	reverse_proxy backend:8080
 }
+
+# Visitors using the bare Elastic IP are sent to the public hostname.
+http://15.252.190.98 {
+	redir https://ems.saibende.in{uri} permanent
+}
