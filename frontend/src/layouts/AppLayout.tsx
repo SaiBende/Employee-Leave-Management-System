@@ -2,10 +2,11 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 import { cn } from '@/lib/utils'
+import { loginPathForRole, roleLabel } from '@/lib/role-home'
 import {
   LayoutDashboard, Users, LogOut, User, FileText, Clock,
   CalendarPlus, CalendarDays, ChevronLeft, Menu, CheckSquare, Building2, Coins, UserPlus,
-  Sun, Moon
+  Sun, Moon, KeyRound, Shield
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -42,19 +43,31 @@ const adminNav = [
   { to: '/employee/profile', label: 'Profile', icon: User },
 ]
 
+const platformNav = [
+  { to: '/platform/dashboard', label: 'Platform Overview', icon: LayoutDashboard },
+  { to: '/platform/companies', label: 'Companies', icon: Building2 },
+]
+
 export default function AppLayout() {
   const { user, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const location = useLocation()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN'
   const isAdmin = user?.role === 'ADMIN'
   const isManager = user?.role === 'MANAGER'
-  const navItems = isAdmin ? adminNav : isManager ? managerNav : employeeNav
+  const navItems = isSuperAdmin
+    ? platformNav
+    : isAdmin
+      ? adminNav
+      : isManager
+        ? managerNav
+        : employeeNav
 
   const handleLogout = () => {
     logout()
-    navigate('/login')
+    navigate(loginPathForRole(user?.role))
   }
 
   return (
@@ -76,8 +89,12 @@ export default function AppLayout() {
               <FileText className="h-4 w-4 text-primary-foreground" />
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-foreground leading-tight text-sm">Leave Manager</p>
-              <p className="text-[10px] text-muted-foreground truncate max-w-[150px]">{user?.email}</p>
+              <p className="font-bold text-foreground leading-tight text-sm">
+                {user?.companyName ?? 'Leave Manager'}
+              </p>
+              <p className="text-[10px] text-muted-foreground truncate max-w-[150px]">
+                {isSuperAdmin ? 'Platform Console' : user?.email}
+              </p>
             </div>
           </Link>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-secondary transition-colors">
@@ -94,10 +111,17 @@ export default function AppLayout() {
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">{user?.name}</p>
               <span className={cn(
-                "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider",
-                isAdmin ? "bg-amber-100 text-amber-700" : isManager ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+                "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider",
+                isSuperAdmin
+                  ? "bg-slate-900 text-white"
+                  : isAdmin
+                    ? "bg-amber-100 text-amber-700"
+                    : isManager
+                      ? "bg-purple-100 text-purple-700"
+                      : "bg-blue-100 text-blue-700"
               )}>
-                {user?.role}
+                {isSuperAdmin && <Shield className="h-2.5 w-2.5" />}
+                {roleLabel(user?.role)}
               </span>
             </div>
           </div>
@@ -106,7 +130,7 @@ export default function AppLayout() {
         {/* Navigation */}
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           <p className="px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest pb-2">
-            {isAdmin ? 'Admin Menu' : isManager ? 'Manager Menu' : 'Employee Menu'}
+            {isSuperAdmin ? 'Platform Menu' : isAdmin ? 'Admin Menu' : isManager ? 'Manager Menu' : 'Employee Menu'}
           </p>
           {navItems.map((item) => {
             const Icon = item.icon
@@ -129,6 +153,17 @@ export default function AppLayout() {
               </Link>
             )
           })}
+
+          <div className="pt-3 mt-3 border-t border-border/60">
+            <Link
+              to="/change-password"
+              onClick={() => setSidebarOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-secondary-foreground transition-all duration-200 group"
+            >
+              <KeyRound className="h-4 w-4 group-hover:scale-110 transition-transform" />
+              Change Password
+            </Link>
+          </div>
         </nav>
       </aside>
 
@@ -140,7 +175,9 @@ export default function AppLayout() {
             <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center">
               <FileText className="h-4 w-4 text-primary-foreground" />
             </div>
-            <h1 className="text-base font-semibold text-foreground">Leave Manager</h1>
+            <h1 className="text-base font-semibold text-foreground">
+              {isSuperAdmin ? 'Platform Console' : user?.companyName ?? 'Leave Manager'}
+            </h1>
           </div>
           <div className="flex items-center gap-4">
             {/* Theme Toggle */}

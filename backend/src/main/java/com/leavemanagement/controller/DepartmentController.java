@@ -2,7 +2,9 @@ package com.leavemanagement.controller;
 
 import com.leavemanagement.dto.ApiResponse;
 import com.leavemanagement.dto.DepartmentResponse;
+import com.leavemanagement.entity.Employee;
 import com.leavemanagement.repository.DepartmentRepository;
+import com.leavemanagement.security.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/departments")
-@Tag(name = "Departments", description = "Department endpoints")
+@Tag(name = "Departments", description = "Company-scoped department endpoints")
 public class DepartmentController {
 
     private final DepartmentRepository departmentRepository;
@@ -24,10 +26,18 @@ public class DepartmentController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all departments")
-    public ResponseEntity<?> getAllDepartments() {
-        List<DepartmentResponse> departments = departmentRepository.findAll().stream()
-            .map(DepartmentResponse::from).toList();
+    @Operation(summary = "Get all departments in the current user's company")
+    public ResponseEntity<?> getAllDepartments(@CurrentUser Employee employee) {
+        if (employee.getCompany() == null) {
+            return ResponseEntity.ok(new ApiResponse(true, "Success", List.of()));
+        }
+
+        List<DepartmentResponse> departments = departmentRepository
+            .findByCompanyIdOrderByNameAsc(employee.getCompany().getId())
+            .stream()
+            .map(DepartmentResponse::from)
+            .toList();
+
         return ResponseEntity.ok(new ApiResponse(true, "Success", departments));
     }
 }

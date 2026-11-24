@@ -1,44 +1,47 @@
 package com.leavemanagement.controller;
 
 import com.leavemanagement.dto.*;
+import com.leavemanagement.entity.Employee;
 import com.leavemanagement.enums.Role;
-import com.leavemanagement.repository.EmployeeRepository;
+import com.leavemanagement.exception.PortalMismatchException;
+import com.leavemanagement.security.CurrentUser;
 import com.leavemanagement.service.AuthService;
+import com.leavemanagement.service.CompanyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@Tag(name = "Authentication", description = "Login and registration endpoints")
+@Tag(name = "Authentication", description = "Platform setup, company signup, and role-based login")
 public class AuthController {
 
     private final AuthService authService;
-    private final EmployeeRepository employeeRepository;
+    private final CompanyService companyService;
 
-    public AuthController(AuthService authService, EmployeeRepository employeeRepository) {
+    public AuthController(AuthService authService, CompanyService companyService) {
         this.authService = authService;
-        this.employeeRepository = employeeRepository;
+        this.companyService = companyService;
     }
 
     @GetMapping("/setup")
-    @Operation(summary = "Check if system needs initial setup")
+    @Operation(summary = "Check whether the platform super admin has been created")
     public ResponseEntity<?> checkSetup() {
-        boolean needsSetup = !employeeRepository.existsByRole(Role.ADMIN);
-        return ResponseEntity.ok(Map.of("needsSetup", needsSetup));
+        return ResponseEntity.ok(Map.of("needsSetup", authService.needsSetup()));
     }
 
-    @PostMapping("/register")
-    @Operation(summary = "Register a new user")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+    @PostMapping("/setup")
+    @Operation(summary = "Create the platform super admin (one-time setup)")
+    public ResponseEntity<?> setup(@Valid @RequestBody SetupRequest request) {
         try {
-            AuthResponse response = authService.register(request);
-            return ResponseEntity.ok(new ApiResponse(true, "Registration successful", response));
+            AuthResponse response = authService.setup(request);
+            return ResponseEntity.ok(new ApiResponse(true, "Platform setup complete", response));
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ApiResponse(false, e.getMessage(), null));
@@ -48,15 +51,58 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/signup-company")
+    @Operation(summary = "Create a company and its first company admin")
+    public ResponseEntity<?> signupCompany(@Valid @RequestBody CompanySignupRequest request) {
+        try {
+            CompanySignupResponse response = companyService.signupCompany(request);
+            return ResponseEntity.ok(new ApiResponse(true, "Company created successfully", response));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ApiResponse(false, e.getMessage(), null));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, e.getMessage(), null));
+        }
+    }
+
+    @PostMapping("/change-password")
+    @Operation(summary = "Change the signed-in user's password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request,
+                                            @CurrentUser Employee employee) {
+        try {
+            authService.changePassword(employee, request);
+            return ResponseEntity.ok(new ApiResponse(true, "Password updated successfully", null));
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiResponse(false, e.getMessage(), null));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, e.getMessage(), null));
+        }
+    }
+
     @PostMapping("/login")
-    @Operation(summary = "Login with email and password")
+    @Operation(summary = "Login through a role-specific portal")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
             AuthResponse response = authService.login(request);
             return ResponseEntity.ok(new ApiResponse(true, "Login successful", response));
-        } catch (Exception e) {
-            return ResponseEntity.status(401)
+        } catch (PortalMismatchException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ApiResponse(false, e.getMessage(), Map.of(
+                    "role", e.getActualRole().name(),
+                    "portal", portalForRole(e.getActualRole())
+                )));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ApiResponse(false, e.getMessage(), null));
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ApiResponse(false, "Invalid email or password", null));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, e.getMessage(), null));
         }
     }
 
@@ -64,5 +110,14 @@ public class AuthController {
     @Operation(summary = "Logout (client-side token discard)")
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok(new ApiResponse(true, "Logged out successfully", null));
+    }
+
+    private String portalForRole(Role role) {
+        return switch (role) {
+            case SUPER_ADMIN -> "/platform/login";
+            case ADMIN -> "/admin/login";
+            case MANAGER -> "/manager/login";
+            case EMPLOYEE -> "/employee/login";
+        };
     }
 }

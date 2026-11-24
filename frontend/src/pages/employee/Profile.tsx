@@ -23,7 +23,8 @@ export default function Profile() {
     { label: 'Full Name', value: profile.name, icon: User },
     { label: 'Email Address', value: profile.email, icon: Mail },
     { label: 'Role', value: profile.role.charAt(0) + profile.role.slice(1).toLowerCase(), icon: Shield },
-    { label: 'Department', value: profile.department, icon: Building2 },
+    { label: 'Company', value: profile.companyName || 'Not linked', icon: Building2 },
+    { label: 'Department', value: profile.department || 'Not assigned', icon: Building2 },
     { label: 'Manager', value: profile.managerName || 'Not assigned', icon: User },
     { label: 'Member Since', value: new Date(profile.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), icon: Calendar },
   ]

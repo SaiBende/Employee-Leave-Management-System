@@ -9,6 +9,7 @@ import com.leavemanagement.security.CurrentUser;
 import com.leavemanagement.service.LeaveBalanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,7 +60,7 @@ public class LeaveBalanceController {
     @PutMapping("/{id}")
     @Operation(summary = "Update leave balance for a team member")
     public ResponseEntity<?> updateBalance(@PathVariable Long id,
-                                            @RequestBody UpdateLeaveBalanceRequest request,
+                                            @Valid @RequestBody UpdateLeaveBalanceRequest request,
                                             @CurrentUser Employee employee) {
         if (employee.getRole() != Role.MANAGER && employee.getRole() != Role.ADMIN) {
             return ResponseEntity.status(403)
@@ -68,6 +69,9 @@ public class LeaveBalanceController {
         try {
             LeaveBalanceResponse balance = leaveBalanceService.updateBalance(id, request, employee);
             return ResponseEntity.ok(new ApiResponse(true, "Balance updated", balance));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                .body(new ApiResponse(false, e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, e.getMessage(), null));
@@ -81,7 +85,7 @@ public class LeaveBalanceController {
             return ResponseEntity.status(403)
                 .body(new ApiResponse(false, "Admin access required", null));
         }
-        List<LeaveBalanceResponse> balances = leaveBalanceService.getAllBalances();
+        List<LeaveBalanceResponse> balances = leaveBalanceService.getAllBalances(employee);
         return ResponseEntity.ok(new ApiResponse(true, "Success", balances));
     }
 }

@@ -1,5 +1,8 @@
 -- Employee Leave Management System - Database Schema
 -- PostgreSQL 16
+--
+-- Runtime schema is managed by Hibernate (spring.jpa.hibernate.ddl-auto=update).
+-- This file documents the resulting structure and can be used for a manual reset.
 
 -- Drop tables if they exist (for dev reset)
 DROP TABLE IF EXISTS leave_comments CASCADE;
@@ -7,6 +10,7 @@ DROP TABLE IF EXISTS leave_balances CASCADE;
 DROP TABLE IF EXISTS leaves CASCADE;
 DROP TABLE IF EXISTS employees CASCADE;
 DROP TABLE IF EXISTS departments CASCADE;
+DROP TABLE IF EXISTS companies CASCADE;
 
 -- Drop enums if they exist
 DROP TYPE IF EXISTS employee_role;
@@ -16,36 +20,62 @@ DROP TYPE IF EXISTS leave_type;
 -- ============================
 -- ENUMS
 -- ============================
-CREATE TYPE employee_role AS ENUM ('ADMIN', 'MANAGER', 'EMPLOYEE');
+CREATE TYPE employee_role AS ENUM ('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'EMPLOYEE');
 CREATE TYPE leave_status AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED');
 CREATE TYPE leave_type AS ENUM ('ANNUAL', 'SICK', 'PERSONAL', 'MATERNITY', 'PATERNITY', 'OTHER');
+
+-- ============================
+-- COMPANIES
+-- ============================
+CREATE TABLE companies (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    slug VARCHAR(180) NOT NULL UNIQUE,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_companies_active ON companies(active);
 
 -- ============================
 -- DEPARTMENTS
 -- ============================
 CREATE TABLE departments (
     id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    company_id BIGINT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_department_company FOREIGN KEY (company_id)
+        REFERENCES companies(id) ON DELETE CASCADE,
+    CONSTRAINT uq_company_department UNIQUE (company_id, name)
 );
 
 CREATE INDEX idx_departments_name ON departments(name);
+CREATE INDEX idx_departments_company ON departments(company_id);
 
 -- ============================
 -- EMPLOYEES
 -- ============================
+-- SUPER_ADMIN rows have no company_id or department_id.
+-- Every other row must belong to exactly one company.
 CREATE TABLE employees (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    department_id BIGINT NOT NULL,
+    company_id BIGINT,
+    department_id BIGINT,
     role employee_role NOT NULL DEFAULT 'EMPLOYEE',
+    must_change_password BOOLEAN NOT NULL DEFAULT FALSE,
     manager_id BIGINT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
 
+    CONSTRAINT fk_employee_company FOREIGN KEY (company_id)
+        REFERENCES companies(id) ON DELETE CASCADE,
     CONSTRAINT fk_employee_department FOREIGN KEY (department_id)
         REFERENCES departments(id) ON DELETE RESTRICT,
     CONSTRAINT fk_employee_manager FOREIGN KEY (manager_id)
@@ -53,6 +83,7 @@ CREATE TABLE employees (
 );
 
 CREATE INDEX idx_employees_email ON employees(email);
+CREATE INDEX idx_employees_company ON employees(company_id);
 CREATE INDEX idx_employees_department ON employees(department_id);
 CREATE INDEX idx_employees_manager ON employees(manager_id);
 CREATE INDEX idx_employees_role ON employees(role);
@@ -139,6 +170,10 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_companies_updated_at
+    BEFORE UPDATE ON companies
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 CREATE TRIGGER trg_departments_updated_at
     BEFORE UPDATE ON departments

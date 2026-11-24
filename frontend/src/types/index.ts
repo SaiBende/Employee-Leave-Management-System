@@ -1,15 +1,23 @@
+export type Role = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'EMPLOYEE'
+export type Portal = 'PLATFORM' | 'ADMIN' | 'MANAGER' | 'EMPLOYEE'
+
 export interface User {
   id: number
   name: string
   email: string
-  role: 'ADMIN' | 'MANAGER' | 'EMPLOYEE'
-  department: string
+  role: Role
+  department?: string | null
+  companyId?: number | null
+  companyName?: string | null
+  companySlug?: string | null
+  mustChangePassword?: boolean
   token: string
 }
 
 export interface LoginRequest {
   email: string
   password: string
+  portal: Portal
 }
 
 export interface RegisterRequest {
@@ -64,11 +72,40 @@ export interface EmployeeResponse {
   id: number
   name: string
   email: string
-  department: string
+  department: string | null
   role: string
+  companyId?: number | null
+  companyName?: string | null
+  companySlug?: string | null
   managerId: number | null
   managerName: string | null
+  mustChangePassword?: boolean
   createdAt: string
+}
+
+export interface Company {
+  id: number
+  name: string
+  slug: string
+  active: boolean
+  adminName: string | null
+  adminEmail: string | null
+  employeeCount: number
+  departmentCount: number
+  createdAt: string
+}
+
+export interface PlatformDashboard {
+  totalCompanies: number
+  activeCompanies: number
+  totalEmployees: number
+  totalLeaves: number
+}
+
+export interface CompanySignupResult {
+  companyId: number
+  companyName: string
+  adminEmail: string
 }
 
 export interface DashboardData {

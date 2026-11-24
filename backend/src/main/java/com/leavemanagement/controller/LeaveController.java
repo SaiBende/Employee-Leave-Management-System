@@ -72,6 +72,9 @@ public class LeaveController {
         try {
             LeaveResponse leave = leaveService.updateLeave(id, request, employee);
             return ResponseEntity.ok(new ApiResponse(true, "Leave updated", leave));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                .body(new ApiResponse(false, e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, e.getMessage(), null));
@@ -85,6 +88,9 @@ public class LeaveController {
         try {
             ApiResponse response = leaveService.cancelLeave(id, employee);
             return ResponseEntity.ok(response);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                .body(new ApiResponse(false, e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, e.getMessage(), null));
@@ -100,6 +106,9 @@ public class LeaveController {
             LeaveCommentResponse comment = leaveService.addComment(
                 id, body.getOrDefault("comment", ""), employee);
             return ResponseEntity.ok(new ApiResponse(true, "Comment added", comment));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                .body(new ApiResponse(false, e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, e.getMessage(), null));

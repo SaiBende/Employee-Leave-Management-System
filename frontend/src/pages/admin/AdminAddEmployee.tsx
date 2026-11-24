@@ -49,7 +49,7 @@ export default function AdminAddEmployee() {
         body.managerId = form.managerId
       }
       await api.post('/employees', body)
-      setSuccess('Employee added successfully!')
+      setSuccess('Employee added. Share the temporary password; they must change it on first sign-in.')
       setTimeout(() => navigate('/admin/employees'), 1500)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add employee')
@@ -117,7 +117,7 @@ export default function AdminAddEmployee() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Password</label>
+              <label className="text-sm font-medium text-foreground">Temporary Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input type="password" className="pl-10" value={form.password}

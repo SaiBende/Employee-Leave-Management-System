@@ -15,12 +15,15 @@ export default function AuthLayout() {
             <FileText className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="text-xl font-bold text-foreground">Leave Manager</span>
+          <span className="ml-2 text-[10px] font-semibold uppercase tracking-widest text-primary bg-primary/10 border border-primary/20 rounded-full px-2 py-0.5">
+            Multi-company
+          </span>
         </Link>
       </div>
 
       {/* Content */}
       <div className="flex-1 flex items-center justify-center relative z-10 p-4">
-        <div className="w-full max-w-md">
+        <div className="w-full py-6">
           <Outlet />
         </div>
       </div>

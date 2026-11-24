@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Employee Leave Management System allows employees to apply for leave and managers to approve or reject requests. It features role-based dashboards, leave history tracking, and team management.
+The Employee Leave Management System is a multi-company platform. Each company has an isolated workspace where employees apply for leave and managers or admins approve or reject requests. The platform owner manages companies from a separate super admin console.
 
 ## Getting Started
 
@@ -10,15 +10,39 @@ The Employee Leave Management System allows employees to apply for leave and man
 
 1. Start the backend server and frontend dev server as described in the root README.md
 2. Open `http://localhost:5173` in your browser
-3. You will see the landing page with application overview
+3. You will see the landing page with an overview and links to the four portals
+
+### First-Time Platform Setup
+
+A fresh database has no accounts.
+
+1. Open `/setup` and create the platform owner account (`SUPER_ADMIN`)
+2. Open `/signup` to create a company workspace and its first company admin
+3. The company admin signs in at `/admin/login` and adds managers and employees
+
+Platform setup can only be completed once. If the platform owner already exists, `/setup` is closed and companies sign up from `/signup`.
+
+### Portal URLs
+
+| Portal | Role | URL |
+|--------|------|-----|
+| Platform | SUPER_ADMIN | `/platform/login` |
+| Company admin | ADMIN | `/admin/login` |
+| Manager | MANAGER | `/manager/login` |
+| Employee | EMPLOYEE | `/employee/login` |
 
 ### Login Credentials
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | (first registration — see First-Time Setup) |
-| Manager | alice@company.com | password123 |
-| Employee | charlie@company.com | password123 |
+Accounts are not shared across companies. Use the credentials created during setup, company signup, or employee onboarding. Temporary passwords must be changed on first sign-in.
+
+For the optional `dev`-profile demo data only:
+
+| Portal | Email | Password |
+|--------|-------|----------|
+| Platform | platform@demo.com | Platform@123 |
+| Admin | admin@demo.com | Admin@123 |
+| Manager | alice@demo.com | password123 |
+| Employee | charlie@demo.com | password123 |
 
 ---
 
@@ -26,9 +50,10 @@ The Employee Leave Management System allows employees to apply for leave and man
 
 ### 1. Login
 
-- Navigate to the Login page from the landing page
+- Navigate to `/employee/login` (or choose Employee on the `/login` portal page)
 - Enter your email and password
 - Click **Sign In**
+- If you were given a temporary password, set a new one when prompted
 - You will be redirected to your Employee Dashboard
 
 ### 2. Dashboard
@@ -108,7 +133,8 @@ The Employee Dashboard displays:
 
 ### 1. Login
 
-- Login using manager credentials (alice@company.com)
+- Sign in at `/manager/login` with the credentials your company admin provided
+- If you have a temporary password, change it when prompted
 - You will be redirected to the Manager Dashboard
 
 ### 2. Manager Dashboard
@@ -152,11 +178,11 @@ The Manager Dashboard displays:
 2. Fill in the form:
    - **Full Name**: Employee's name
    - **Email**: Employee's email address
-   - **Password**: Initial password
-   - **Department**: Select from the dropdown
-   - **Role**: Employee or Manager
+   - **Temporary Password**: Initial password (at least 8 characters)
+   - **Department**: Select from your company's departments
+   - **Role**: Fixed to Employee when a manager creates the account
 3. Click **Add Employee**
-4. The new employee can now login with the provided credentials
+4. Share the temporary password with the employee. They must change it on first sign-in at `/employee/login`.
 
 ### 7. Manage Leave Balances
 
@@ -172,13 +198,16 @@ The Manager Dashboard displays:
 - Sign in as Admin, open **Add Employee**, and choose **Manager** as the role.
 - New managers do not have any employees assigned initially.
 
-### 9. First-Time Setup (Admin Registration)
+### 9. First-Time Setup and Company Signup
 
-- When the system has **no admin**, the first registration creates a **System Admin**
-- The Register page shows an amber banner: "This account will be the system administrator"
-- Admin can then manage departments, employees, and view all data
-- After an admin exists, public registration is **closed**. Accounts are created only
-  by admins (managers/employees) or managers (employees on their team).
+- The platform owner is created once at `/setup` and signs in at `/platform/login`
+- A new company is created at `/signup`; its first user becomes that company's **ADMIN**
+- The company admin signs in at `/admin/login` and can manage departments, employees,
+  balances, and all company data
+- There is no self-registration for managers or employees. Company admins create
+  managers and employees; managers create employees for their own team.
+- Platform-created admins and all newly created managers/employees receive a
+  temporary password and must change it on first sign-in.
 
 ---
 
@@ -186,8 +215,9 @@ The Manager Dashboard displays:
 
 ### 1. Login
 
-- Login using admin credentials (the first user who registered is the System Admin)
-- If starting from a fresh DB, see **First-Time Setup** in the Manager Guide above
+- Sign in at `/admin/login` with the company admin credentials
+- If you created the company through `/signup`, use the password you chose there
+- If the platform owner created the company for you, change the temporary password when prompted
 - You will be redirected to the Admin Dashboard
 
 ### 2. Admin Dashboard
@@ -239,9 +269,11 @@ The Admin Dashboard displays organization-wide statistics:
 
 ### Sidebar (Desktop)
 - The sidebar shows different menu items based on your role
+- **Platform Menu**: Platform Overview, Companies
 - **Admin Menu**: Dashboard, Pending Approvals, All Leaves, All Employees, Add Employee, Departments, Calendar, Profile
 - **Employee Menu**: Dashboard, Apply Leave, Leave History, Calendar, Leave Balances, Profile
 - **Manager Menu**: Dashboard, Pending Approvals, My Team, Add Employee, Leave Balances, Calendar, Profile
+- Every role also has **Change Password** below the menu
 
 ### Mobile
 - The sidebar is hidden by default on mobile
@@ -250,7 +282,7 @@ The Admin Dashboard displays organization-wide statistics:
 
 ### Logout
 - Click **Logout** at the bottom of the sidebar
-- You will be redirected to the Login page
+- You will be redirected to the login portal for your role
 
 ---
 

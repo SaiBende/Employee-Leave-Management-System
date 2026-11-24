@@ -11,8 +11,8 @@ import {
 const features = [
   {
     icon: Shield,
-    title: 'Role-Based Access',
-    description: 'Secure dashboards tailored for employees and managers with granular permissions.',
+    title: 'Four Role Portals',
+    description: 'Separate sign-in portals for platform owners, company admins, managers, and employees.',
     color: 'from-blue-500 to-cyan-500',
   },
   {
@@ -48,10 +48,10 @@ const features = [
 ]
 
 const stats = [
-  { icon: Building2, value: '500+', label: 'Companies' },
-  { icon: Users, value: '50K+', label: 'Employees' },
-  { icon: CheckCircle2, value: '98%', label: 'Satisfaction' },
-  { icon: CalendarDays, value: '1M+', label: 'Requests Managed' },
+  { icon: Building2, value: '4', label: 'Role Portals' },
+  { icon: Users, value: '100%', label: 'Tenant Isolation' },
+  { icon: CheckCircle2, value: '1', label: 'Platform Console' },
+  { icon: CalendarDays, value: '24/7', label: 'Team Access' },
 ]
 
 export default function Home() {
@@ -70,7 +70,7 @@ export default function Home() {
             <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
             <a href="#stats" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Stats</a>
             <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Sign In</Link>
-            <Link to="/register">
+            <Link to="/signup">
               <Button size="sm" className="rounded-full">
                 Get Started <ArrowRight className="h-3.5 w-3.5 ml-1" />
               </Button>
@@ -158,14 +158,14 @@ export default function Home() {
             </h1>
             
             <p className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
-              Empower your team with a modern leave management system. 
-              Submit requests, track approvals, and manage time off — all in one place.
+              Run leave management for one company or a hundred. Four dedicated portals,
+              fully isolated company workspaces, and approvals that stay simple.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Link to="/register">
+              <Link to="/signup">
                 <Button size="lg" className="rounded-full text-base px-8 h-12 shadow-2xl shadow-primary/40 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 border-0">
-                  Start Free Trial <ArrowRight className="h-4 w-4 ml-2" />
+                  Create company account <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>
               <Link to="/login">
@@ -180,15 +180,15 @@ export default function Home() {
             <div className="flex flex-wrap items-center gap-6 pt-8 text-xs text-muted-foreground">
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-                Free 14-day trial
+                Multi-company ready
               </div>
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-                No credit card
+                Isolated workspaces
               </div>
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-                Cancel anytime
+                Four role portals
               </div>
             </div>
           </div>
@@ -264,12 +264,13 @@ export default function Home() {
               Ready to transform your leave management?
             </h2>
             <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto">
-              Join thousands of companies that trust Employee Leave Management System to manage their employee leave requests efficiently.
+              Create your company workspace in minutes, invite your managers, and give every
+              employee a dedicated portal for time off.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Link to="/register">
+              <Link to="/signup">
                 <Button size="lg" variant="secondary" className="rounded-full text-base px-8 h-12 shadow-xl">
-                  Get Started Free <ArrowRight className="h-4 w-4 ml-2" />
+                  Create company account <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>
               <Link to="/login">

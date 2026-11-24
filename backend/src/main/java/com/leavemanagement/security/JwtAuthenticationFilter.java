@@ -1,5 +1,8 @@
 package com.leavemanagement.security;
 
+import com.leavemanagement.entity.Employee;
+import com.leavemanagement.enums.Role;
+import com.leavemanagement.repository.EmployeeRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,9 +21,12 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final EmployeeRepository employeeRepository;
 
-    public JwtAuthenticationFilter(JwtService jwtService) {
+    public JwtAuthenticationFilter(JwtService jwtService,
+                                   EmployeeRepository employeeRepository) {
         this.jwtService = jwtService;
+        this.employeeRepository = employeeRepository;
     }
 
     @Override
@@ -35,17 +41,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (jwtService.isValid(token)) {
                 Claims claims = jwtService.parseToken(token);
                 String email = claims.getSubject();
-                String role = claims.get("role", String.class);
 
-                UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(
-                        email, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
-                auth.setDetails(claims);
+                // Re-read the account so role changes and company suspensions take
+                // effect immediately, even for tokens issued earlier.
+                Employee employee = employeeRepository.findByEmail(email).orElse(null);
+                if (employee != null && isAccountUsable(employee)) {
+                    UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(
+                            email, null,
+                            List.of(new SimpleGrantedAuthority("ROLE_" + employee.getRole().name())));
+                    auth.setDetails(claims);
 
-                SecurityContextHolder.getContext().setAuthentication(auth);
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isAccountUsable(Employee employee) {
+        if (employee.getRole() == Role.SUPER_ADMIN) {
+            return true;
+        }
+        return employee.getCompany() != null && employee.getCompany().isActive();
     }
 }

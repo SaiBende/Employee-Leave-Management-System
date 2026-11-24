@@ -160,7 +160,7 @@ export function useApplyLeave() {
 export function useCancelLeave() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) => api.put(`/leaves/${id}/cancel`),
+    mutationFn: (id: string) => api.delete(`/leaves/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.leaves })
       queryClient.invalidateQueries({ queryKey: queryKeys.leaveBalances })
@@ -251,10 +251,12 @@ export function useAddDepartment() {
 export function useUpdateTeamBalances() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (balances: { userId: number; leaveType: string; totalDays: number }[]) =>
-      api.put('/leave-balances/team', { balances }),
+    mutationFn: ({ id, totalDays, usedDays }: { id: number; totalDays: number; usedDays: number }) =>
+      api.put(`/leave-balances/${id}`, { totalDays, usedDays }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.leaveBalancesTeam })
+      queryClient.invalidateQueries({ queryKey: queryKeys.leaveBalances })
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardAdmin })
     },
   })
 }

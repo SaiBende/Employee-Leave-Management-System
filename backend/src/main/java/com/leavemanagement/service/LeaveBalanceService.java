@@ -4,15 +4,21 @@ import com.leavemanagement.dto.LeaveBalanceResponse;
 import com.leavemanagement.dto.UpdateLeaveBalanceRequest;
 import com.leavemanagement.entity.Employee;
 import com.leavemanagement.entity.LeaveBalance;
+import com.leavemanagement.enums.LeaveType;
 import com.leavemanagement.enums.Role;
 import com.leavemanagement.repository.EmployeeRepository;
 import com.leavemanagement.repository.LeaveBalanceRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 public class LeaveBalanceService {
+
+    private static final int ANNUAL_DEFAULT_DAYS = 20;
+    private static final int SICK_DEFAULT_DAYS = 12;
+    private static final int PERSONAL_DEFAULT_DAYS = 5;
 
     private final LeaveBalanceRepository leaveBalanceRepository;
     private final EmployeeRepository employeeRepository;
@@ -21,6 +27,28 @@ public class LeaveBalanceService {
                                 EmployeeRepository employeeRepository) {
         this.leaveBalanceRepository = leaveBalanceRepository;
         this.employeeRepository = employeeRepository;
+    }
+
+    /**
+     * Gives a newly provisioned account a sensible starting balance so leave
+     * requests do not fail silently on a missing balance row.
+     */
+    @Transactional
+    public void initializeDefaults(Employee employee) {
+        int year = java.time.Year.now().getValue();
+        if (!leaveBalanceRepository.findByEmployeeIdAndYearOrderByLeaveType(employee.getId(), year).isEmpty()) {
+            return;
+        }
+
+        leaveBalanceRepository.save(LeaveBalance.builder()
+            .employee(employee).leaveType(LeaveType.ANNUAL)
+            .totalDays(ANNUAL_DEFAULT_DAYS).usedDays(0).year(year).build());
+        leaveBalanceRepository.save(LeaveBalance.builder()
+            .employee(employee).leaveType(LeaveType.SICK)
+            .totalDays(SICK_DEFAULT_DAYS).usedDays(0).year(year).build());
+        leaveBalanceRepository.save(LeaveBalance.builder()
+            .employee(employee).leaveType(LeaveType.PERSONAL)
+            .totalDays(PERSONAL_DEFAULT_DAYS).usedDays(0).year(year).build());
     }
 
     public List<LeaveBalanceResponse> getMyBalances(Long employeeId) {
@@ -36,6 +64,9 @@ public class LeaveBalanceService {
         if (!isManagerOf(currentUser, target) && currentUser.getRole() != Role.ADMIN) {
             throw new SecurityException("Access denied");
         }
+        if (!sameCompany(currentUser, target)) {
+            throw new SecurityException("Access denied");
+        }
 
         int year = java.time.Year.now().getValue();
         return leaveBalanceRepository.findByEmployeeIdAndYearOrderByLeaveType(employeeId, year)
@@ -46,8 +77,9 @@ public class LeaveBalanceService {
         int year = java.time.Year.now().getValue();
         List<Long> employeeIds;
         if (currentUser.getRole() == Role.ADMIN) {
-            employeeIds = employeeRepository.findAll().stream()
-                .map(Employee::getId).toList();
+            employeeIds = employeeRepository
+                .findByCompanyIdOrderByNameAsc(requireCompanyId(currentUser))
+                .stream().map(Employee::getId).toList();
         } else {
             employeeIds = employeeRepository.findByManagerId(currentUser.getId())
                 .stream().map(Employee::getId).toList();
@@ -57,10 +89,12 @@ public class LeaveBalanceService {
             .stream().map(this::toResponse).toList();
     }
 
-    public List<LeaveBalanceResponse> getAllBalances() {
+    public List<LeaveBalanceResponse> getAllBalances(Employee currentUser) {
         int year = java.time.Year.now().getValue();
-        List<Long> allIds = employeeRepository.findAll().stream()
-            .map(Employee::getId).toList();
+        List<Long> allIds = employeeRepository
+            .findByCompanyIdOrderByNameAsc(requireCompanyId(currentUser))
+            .stream().map(Employee::getId).toList();
+        if (allIds.isEmpty()) return List.of();
         return leaveBalanceRepository.findByEmployeeIdInAndYear(allIds, year)
             .stream().map(this::toResponse).toList();
     }
@@ -69,6 +103,9 @@ public class LeaveBalanceService {
         LeaveBalance balance = leaveBalanceRepository.findById(balanceId)
             .orElseThrow(() -> new IllegalArgumentException("Leave balance not found"));
 
+        if (!sameCompany(currentUser, balance.getEmployee())) {
+            throw new SecurityException("Access denied");
+        }
         if (!isManagerOf(currentUser, balance.getEmployee()) && currentUser.getRole() != Role.ADMIN) {
             throw new SecurityException("Access denied");
         }
@@ -82,6 +119,19 @@ public class LeaveBalanceService {
     private boolean isManagerOf(Employee manager, Employee employee) {
         return employee.getManager() != null
             && employee.getManager().getId().equals(manager.getId());
+    }
+
+    private boolean sameCompany(Employee actor, Employee employee) {
+        return actor.getCompany() != null
+            && employee.getCompany() != null
+            && actor.getCompany().getId().equals(employee.getCompany().getId());
+    }
+
+    private Long requireCompanyId(Employee employee) {
+        if (employee.getCompany() == null) {
+            throw new SecurityException("Account is not linked to a company");
+        }
+        return employee.getCompany().getId();
     }
 
     private LeaveBalanceResponse toResponse(LeaveBalance balance) {

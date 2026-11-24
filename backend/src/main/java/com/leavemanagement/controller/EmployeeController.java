@@ -37,7 +37,7 @@ public class EmployeeController {
     public ResponseEntity<?> getAllEmployees(@CurrentUser Employee employee) {
         List<EmployeeResponse> employees;
         if (employee.getRole() == Role.ADMIN) {
-            employees = employeeService.getAllEmployees();
+            employees = employeeService.getAllEmployees(employee.getCompany().getId());
         } else if (employee.getRole() == Role.MANAGER) {
             employees = employeeService.getTeamMembers(employee.getId());
         } else {
@@ -84,8 +84,11 @@ public class EmployeeController {
             throw new AccessDeniedException("Only admins can update employees");
         }
         try {
-            EmployeeResponse updated = employeeService.updateEmployee(id, request);
+            EmployeeResponse updated = employeeService.updateEmployee(id, request, employee);
             return ResponseEntity.ok(new ApiResponse(true, "Employee updated", updated));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                .body(new ApiResponse(false, e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, e.getMessage(), null));
@@ -100,8 +103,11 @@ public class EmployeeController {
             throw new AccessDeniedException("Only admins can delete employees");
         }
         try {
-            employeeService.deleteEmployee(id);
+            employeeService.deleteEmployee(id, employee);
             return ResponseEntity.ok(new ApiResponse(true, "Employee deleted", null));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                .body(new ApiResponse(false, e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, e.getMessage(), null));

@@ -2,7 +2,7 @@ package com.leavemanagement.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
@@ -14,6 +14,7 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank
+    @Size(min = 8, max = 100, message = "Password must be at least 8 characters")
     private String password;
 
     private Long departmentId;

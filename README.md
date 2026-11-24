@@ -49,16 +49,16 @@ Frontend starts at `http://localhost:5173` (proxies `/api` to backend).
 
 ## Setup & Credentials
 
-**First-time setup:** When the database has no admin, the first person to complete the setup form becomes **System Admin**. Public registration closes immediately after that. All later accounts are created by an **admin** (managers and employees) or by a **manager** (employees only).
+The app is a multi-company SaaS platform. A fresh database has no accounts:
 
-After the seeder runs (fresh DB), these demo accounts are created:
+1. **Platform setup** — open `/setup` and create the platform `SUPER_ADMIN`. This can only be done once. Sign in later at `/platform/login`.
+2. **Company signup** — open `/signup` to create a company workspace and its first `ADMIN`, who chooses their own password. Six default departments and default leave balances are created automatically.
+3. **Company staffing** — the company admin signs in at `/admin/login` and creates managers and employees with temporary passwords. Managers sign in at `/manager/login`, employees at `/employee/login`, and both must change the temporary password on first sign-in.
+4. **Platform oversight** — the super admin can create, suspend, and reactivate companies at `/platform/companies`. Suspension blocks existing tokens immediately.
 
-| Role | Email | Password |
-|------|-------|----------|
-| Manager | alice@company.com | password123 |
-| Employee | charlie@company.com | password123 |
+There is no email service; temporary passwords are shared directly by the person who creates the account.
 
-> **Demo environment note:** In the current workspace database, the admin account is `admin@company.com` / `Admin@123`.
+**Demo accounts (optional):** run the backend with the `dev` profile to seed `platform@demo.com` / `Platform@123`, `admin@demo.com` / `Admin@123`, and the `@demo.com` manager/employee accounts (`password123`). The seeder is disabled in production and only runs when the `companies` table is empty.
 
 ## API Documentation
 
@@ -72,10 +72,16 @@ Once the backend is running:
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| POST | `/api/auth/register` | No (setup only) | Bootstrap first admin; closed once an admin exists |
-| POST | `/api/auth/login` | No | Login, returns JWT |
-| GET | `/api/auth/setup` | No | Check if system needs initial setup |
+| GET | `/api/auth/setup` | No | Check whether the platform super admin exists |
+| POST | `/api/auth/setup` | No (one time) | Create the platform SUPER_ADMIN |
+| POST | `/api/auth/signup-company` | No | Create a company and its first ADMIN |
+| POST | `/api/auth/login` | No | Portal-aware login (`portal`: PLATFORM/ADMIN/MANAGER/EMPLOYEE), returns JWT |
+| POST | `/api/auth/change-password` | Yes | Change own password and clear `mustChangePassword` |
 | POST | `/api/auth/logout` | Yes | Logout |
+| GET | `/api/platform/dashboard` | SUPER_ADMIN | Platform-wide totals |
+| GET | `/api/platform/companies` | SUPER_ADMIN | List all companies |
+| POST | `/api/platform/companies` | SUPER_ADMIN | Create a company with a temporary admin password |
+| PUT | `/api/platform/companies/{id}/status` | SUPER_ADMIN | Suspend or reactivate a company |
 | GET | `/api/departments` | All | List departments |
 | POST | `/api/departments` | Admin | Create department |
 | DELETE | `/api/departments/{id}` | Admin | Delete department |
@@ -137,7 +143,8 @@ Employee Leave Management System/
 │   │   ├── context/            # AuthContext
 │   │   ├── layouts/            # AppLayout, AuthLayout
 │   │   ├── pages/              # All route pages
-│   │   │   ├── auth/           # Login, Register
+│   │   │   ├── auth/           # Portal chooser, portal logins, setup, company signup, change password
+│   │   │   ├── platform/       # Super admin dashboard and company management
 │   │   │   ├── admin/          # Dashboard, Employees, Departments, Pending Approvals, All Leaves
 │   │   │   ├── employee/       # Dashboard, ApplyLeave, Leaves, Details, Profile, MyBalances
 │   │   │   ├── manager/        # Dashboard, PendingApprovals, Team, AddEmployee, TeamBalances, History
@@ -160,7 +167,10 @@ Employee Leave Management System/
 
 ## Features
 
-- **Role-based access** — Admin, Manager, and Employee roles with distinct dashboards and permissions
+- **Multi-company SaaS** — Public company signup, platform super admin console, isolated tenant data, and suspension controls
+- **Four login portals** — Dedicated sign-in for platform owner, company admin, manager, and employee
+- **Temporary-password onboarding** — Platform/company-created accounts must change their password on first sign-in
+- **Role-based access** — Super Admin, Company Admin, Manager, and Employee roles with distinct dashboards and permissions
 - **JWT authentication** — Secure token-based auth with automatic refresh flow
 - **Leave lifecycle** — Apply, edit, cancel, approve, reject with status tracking; approved leaves can be cancelled by the employee with automatic balance restore
 - **Leave Balance Tracking** — Track remaining leave days (Annual, Sick, Personal) per employee per year, auto-deduct on approval and auto-restore on cancellation
@@ -198,7 +208,7 @@ Get-NetTCPConnection -LocalPort 8080 | Select -ExpandProperty OwningProcess | St
 docker compose -f backend/docker-compose.yml down -v
 docker compose -f backend/docker-compose.yml up -d
 ```
-Then restart the backend — DatabaseSeeder will auto-populate data.
+Then restart the backend. With the `dev` profile the demo seeder repopulates data; otherwise open `/setup` to create the platform owner and `/signup` to create a company.
 
 ## License
 

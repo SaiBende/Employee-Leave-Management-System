@@ -1,11 +1,14 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 import { roleHome } from '@/lib/role-home'
 import AuthLayout from '@/layouts/AuthLayout'
 import AppLayout from '@/layouts/AppLayout'
 import Home from '@/pages/Home'
-import LoginPage from '@/pages/auth/LoginPage'
-import RegisterPage from '@/pages/auth/RegisterPage'
+import PortalChooserPage from '@/pages/auth/PortalChooserPage'
+import PortalLoginPage from '@/pages/auth/PortalLoginPage'
+import SetupPage from '@/pages/auth/SetupPage'
+import CompanySignupPage from '@/pages/auth/CompanySignupPage'
+import ChangePasswordPage from '@/pages/auth/ChangePasswordPage'
 import EmployeeDashboard from '@/pages/employee/EmployeeDashboard'
 import ApplyLeave from '@/pages/employee/ApplyLeave'
 import LeaveHistory from '@/pages/employee/LeaveHistory'
@@ -26,21 +29,36 @@ import AdminLeaves from '@/pages/admin/AdminLeaves'
 import AdminEmployees from '@/pages/admin/AdminEmployees'
 import AdminDepartments from '@/pages/admin/AdminDepartments'
 import AdminAddEmployee from '@/pages/admin/AdminAddEmployee'
+import PlatformDashboard from '@/pages/platform/PlatformDashboard'
+import PlatformCompanies from '@/pages/platform/PlatformCompanies'
 import NotFound from '@/pages/NotFound'
 
-function ProtectedRoute({ children, allowedRole }: { children: React.ReactNode; allowedRole?: string }) {
+type Role = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'EMPLOYEE'
+
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+    </div>
+  )
+}
+
+function ProtectedRoute({
+  children,
+  allowedRoles,
+}: {
+  children: React.ReactNode
+  allowedRoles?: Role[]
+}) {
   const { user, isLoading } = useAuth()
+  const location = useLocation()
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    )
-  }
-
+  if (isLoading) return <LoadingScreen />
   if (!user) return <Navigate to="/login" replace />
-  if (allowedRole && user.role !== allowedRole) {
+  if (user.mustChangePassword && location.pathname !== '/change-password') {
+    return <Navigate to="/change-password" replace />
+  }
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to={roleHome(user.role)} replace />
   }
   return <>{children}</>
@@ -49,16 +67,9 @@ function ProtectedRoute({ children, allowedRole }: { children: React.ReactNode; 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth()
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    )
-  }
-
+  if (isLoading) return <LoadingScreen />
   if (user) {
-    return <Navigate to={roleHome(user.role)} replace />
+    return <Navigate to={user.mustChangePassword ? '/change-password' : roleHome(user.role)} replace />
   }
   return <>{children}</>
 }
@@ -69,13 +80,29 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route element={<PublicRoute><AuthLayout /></PublicRoute>}>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/login" element={<PortalChooserPage />} />
+            <Route path="/platform/login" element={<PortalLoginPage portal="PLATFORM" />} />
+            <Route path="/admin/login" element={<PortalLoginPage portal="ADMIN" />} />
+            <Route path="/manager/login" element={<PortalLoginPage portal="MANAGER" />} />
+            <Route path="/employee/login" element={<PortalLoginPage portal="EMPLOYEE" />} />
+            <Route path="/setup" element={<SetupPage />} />
+            <Route path="/signup" element={<CompanySignupPage />} />
+            <Route path="/register" element={<Navigate to="/signup" replace />} />
+          </Route>
+
+          <Route element={<ProtectedRoute><AuthLayout /></ProtectedRoute>}>
+            <Route path="/change-password" element={<ChangePasswordPage />} />
           </Route>
 
           <Route path="/" element={<Home />} />
 
-          <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+          <Route
+            element={
+              <ProtectedRoute allowedRoles={['EMPLOYEE', 'MANAGER', 'ADMIN']}>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
             <Route path="/employee/leaves/apply" element={<ApplyLeave />} />
             <Route path="/employee/leaves" element={<LeaveHistory />} />
@@ -86,7 +113,13 @@ export default function App() {
             <Route path="/calendar" element={<Calendar />} />
           </Route>
 
-          <Route element={<ProtectedRoute allowedRole="MANAGER"><AppLayout /></ProtectedRoute>}>
+          <Route
+            element={
+              <ProtectedRoute allowedRoles={['MANAGER']}>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route path="/manager/dashboard" element={<ManagerDashboard />} />
             <Route path="/manager/pending" element={<PendingApprovals />} />
             <Route path="/manager/employees" element={<TeamMembers />} />
@@ -95,7 +128,13 @@ export default function App() {
             <Route path="/manager/balances" element={<TeamBalances />} />
           </Route>
 
-          <Route element={<ProtectedRoute allowedRole="ADMIN"><AppLayout /></ProtectedRoute>}>
+          <Route
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/pending" element={<AdminApprovals />} />
             <Route path="/admin/leaves" element={<AdminLeaves />} />
@@ -104,6 +143,21 @@ export default function App() {
             <Route path="/admin/employees/add" element={<AdminAddEmployee />} />
           </Route>
 
+          <Route
+            element={
+              <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/platform/dashboard" element={<PlatformDashboard />} />
+            <Route path="/platform/companies" element={<PlatformCompanies />} />
+          </Route>
+
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="/manager" element={<Navigate to="/manager/dashboard" replace />} />
+          <Route path="/employee" element={<Navigate to="/employee/dashboard" replace />} />
+          <Route path="/platform" element={<Navigate to="/platform/dashboard" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>

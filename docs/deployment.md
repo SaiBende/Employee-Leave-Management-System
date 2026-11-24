@@ -131,12 +131,39 @@ docker exec ems-postgres pg_dump -U admin -d leave_management > ~/leave_manageme
 cat ~/leave_management.sql | docker exec -i ems-postgres psql -U admin -d leave_management
 ```
 
-### First admin account
+### First platform owner and companies
 
-A fresh database has no admin user. Open `https://ems.saibende.in/register` and
-create the first account — the backend automatically makes the first registered
-user an `ADMIN`. Public registration closes immediately after this; admins create
-managers and employees from the app, and managers create employees for their team.
+A fresh database has no accounts.
+
+1. Open `https://ems.saibende.in/setup` and create the platform `SUPER_ADMIN`.
+   Setup can only be completed once.
+2. Sign in at `https://ems.saibende.in/platform/login` to reach the platform console.
+3. Companies can self-signup at `https://ems.saibende.in/signup`, or the platform
+   owner can create one at `/platform/companies` with a temporary admin password.
+4. Company admins sign in at `/admin/login`; managers and employees use
+   `/manager/login` and `/employee/login`.
+
+### Upgrading from the single-company schema
+
+The multi-company release is not backwards compatible with the old single-company
+accounts. Back up first, then start from a clean database:
+
+```bash
+cd ~/ems
+
+# 1. Back up the old database
+docker exec ems-postgres pg_dump -U admin -d leave_management > ~/leave_management-pre-multicompany.sql
+
+# 2. Stop the stack and remove the database volume (destructive)
+docker compose down
+docker volume rm ems_postgres_data
+
+# 3. Deploy the new images and start clean
+docker compose up -d --wait
+```
+
+Then complete `/setup` and create companies. Keep the SQL backup until the new
+platform has been verified.
 
 ## Endpoints
 

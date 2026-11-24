@@ -46,6 +46,9 @@ public class ManagerController {
             String comment = body != null ? body.getOrDefault("comment", "") : "";
             LeaveResponse leave = managerService.approveLeave(id, comment, employee);
             return ResponseEntity.ok(new ApiResponse(true, "Leave approved", leave));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                .body(new ApiResponse(false, e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, e.getMessage(), null));
@@ -63,6 +66,9 @@ public class ManagerController {
                               body.getOrDefault("comments", ""));
             LeaveResponse leave = managerService.rejectLeave(id, comment, employee);
             return ResponseEntity.ok(new ApiResponse(true, "Leave rejected", leave));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403)
+                .body(new ApiResponse(false, e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, e.getMessage(), null));

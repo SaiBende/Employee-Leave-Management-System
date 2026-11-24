@@ -1,31 +1,15 @@
--- Seed data for development
+-- Optional development seed: one company with the six default departments.
+-- Accounts are intentionally not seeded here because passwords must be BCrypt
+-- hashes created by the application. Use /setup and /signup, or run the backend
+-- with the `dev` profile to get the Java demo seeder accounts.
 
--- Departments
-INSERT INTO departments (name) VALUES
-    ('Engineering'),
-    ('Human Resources'),
-    ('Marketing'),
-    ('Finance'),
-    ('Operations');
+INSERT INTO companies (name, slug, active) VALUES
+    ('Demo Company', 'demo-company', TRUE);
 
--- Managers (password: admin123 -> BCrypt hash)
-INSERT INTO employees (name, email, password, department_id, role) VALUES
-    ('Alice Manager', 'alice@company.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
-     (SELECT id FROM departments WHERE name = 'Engineering'), 'MANAGER'),
-    ('Bob Manager', 'bob@company.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
-     (SELECT id FROM departments WHERE name = 'Human Resources'), 'MANAGER');
-
--- Employees
-INSERT INTO employees (name, email, password, department_id, role, manager_id) VALUES
-    ('Charlie Employee', 'charlie@company.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
-     (SELECT id FROM departments WHERE name = 'Engineering'), 'EMPLOYEE',
-     (SELECT id FROM employees WHERE email = 'alice@company.com')),
-    ('Diana Employee', 'diana@company.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
-     (SELECT id FROM departments WHERE name = 'Marketing'), 'EMPLOYEE',
-     (SELECT id FROM employees WHERE email = 'bob@company.com'));
-
--- Sample leave requests
-INSERT INTO leaves (employee_id, leave_type, start_date, end_date, reason, status)
-VALUES
-    ((SELECT id FROM employees WHERE email = 'charlie@company.com'), 'ANNUAL', '2026-07-10', '2026-07-12', 'Family vacation', 'PENDING'),
-    ((SELECT id FROM employees WHERE email = 'diana@company.com'), 'SICK', '2026-07-05', '2026-07-06', 'Feeling unwell', 'APPROVED');
+INSERT INTO departments (name, company_id) VALUES
+    ('General', (SELECT id FROM companies WHERE slug = 'demo-company')),
+    ('Engineering', (SELECT id FROM companies WHERE slug = 'demo-company')),
+    ('Human Resources', (SELECT id FROM companies WHERE slug = 'demo-company')),
+    ('Marketing', (SELECT id FROM companies WHERE slug = 'demo-company')),
+    ('Finance', (SELECT id FROM companies WHERE slug = 'demo-company')),
+    ('Operations', (SELECT id FROM companies WHERE slug = 'demo-company'));

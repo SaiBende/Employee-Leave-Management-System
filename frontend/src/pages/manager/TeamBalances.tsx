@@ -29,9 +29,11 @@ export default function TeamBalances() {
 
   const handleSave = async (balance: LeaveBalance) => {
     try {
-      await updateTeamBalances.mutateAsync([
-        { userId: balance.employeeId, leaveType: balance.leaveType, totalDays: editForm.totalDays },
-      ])
+      await updateTeamBalances.mutateAsync({
+        id: balance.id,
+        totalDays: editForm.totalDays,
+        usedDays: editForm.usedDays,
+      })
       setEditingId(null)
       toast.success('Balance updated successfully')
     } catch (err) {

@@ -41,6 +41,8 @@ public class LeaveService {
     }
 
     public LeaveResponse apply(LeaveRequest request, Employee employee) {
+        requireCompanyId(employee);
+
         Leave leave = Leave.builder()
             .employee(employee)
             .leaveType(LeaveType.valueOf(request.getLeaveType().toUpperCase()))
@@ -62,6 +64,10 @@ public class LeaveService {
     public LeaveResponse getLeaveById(Long id, Employee employee) {
         Leave leave = leaveRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Leave not found"));
+
+        if (!sameCompany(employee, leave.getEmployee())) {
+            throw new SecurityException("Access denied");
+        }
 
         if (!leave.getEmployee().getId().equals(employee.getId())
             && !isManagerOf(employee, leave.getEmployee())
@@ -153,10 +159,12 @@ public class LeaveService {
     }
 
     public List<LeaveResponse> getCalendarLeaves(Employee employee) {
+        Long companyId = requireCompanyId(employee);
         List<Leave> leaves;
 
         switch (employee.getRole()) {
-            case ADMIN -> leaves = leaveRepository.findAll();
+            case ADMIN -> leaves = leaveRepository
+                .findByEmployeeCompanyIdOrderByCreatedAtDesc(companyId);
             case MANAGER -> {
                 List<Long> teamIds = employeeRepository.findByManagerId(employee.getId())
                     .stream().map(Employee::getId).toList();
@@ -175,6 +183,10 @@ public class LeaveService {
     public List<LeaveResponse> getEmployeeLeaves(Long employeeId, Employee currentUser) {
         Employee target = employeeRepository.findById(employeeId)
             .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+
+        if (!sameCompany(currentUser, target)) {
+            throw new SecurityException("Access denied");
+        }
 
         if (!currentUser.getId().equals(employeeId)
             && !isManagerOf(currentUser, target)
@@ -220,9 +232,23 @@ public class LeaveService {
     }
 
     private boolean canAccess(Leave leave, Employee actor) {
-        return actor.getRole() == Role.ADMIN
+        return sameCompany(actor, leave.getEmployee())
+            && (actor.getRole() == Role.ADMIN
             || leave.getEmployee().getId().equals(actor.getId())
-            || isManagerOf(actor, leave.getEmployee());
+            || isManagerOf(actor, leave.getEmployee()));
+    }
+
+    private boolean sameCompany(Employee actor, Employee employee) {
+        return actor.getCompany() != null
+            && employee.getCompany() != null
+            && actor.getCompany().getId().equals(employee.getCompany().getId());
+    }
+
+    private Long requireCompanyId(Employee employee) {
+        if (employee.getCompany() == null) {
+            throw new SecurityException("Account is not linked to a company");
+        }
+        return employee.getCompany().getId();
     }
 
     private List<LeaveCommentResponse> getComments(Long leaveId) {

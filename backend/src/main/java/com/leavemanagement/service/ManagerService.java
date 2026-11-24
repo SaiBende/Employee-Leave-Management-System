@@ -34,17 +34,22 @@ public class ManagerService {
     }
 
     public List<LeaveResponse> getPendingLeaves(Employee actor) {
-        List<Leave> pending = leaveRepository.findByStatusOrderByCreatedAtDesc(LeaveStatus.PENDING);
-
         if (actor.getRole() == Role.ADMIN) {
-            return pending.stream().map(this::toResponse).toList();
+            Long companyId = requireCompanyId(actor);
+            return leaveRepository
+                .findByEmployeeCompanyIdAndStatusOrderByCreatedAtDesc(companyId, LeaveStatus.PENDING)
+                .stream().map(this::toResponse).toList();
         }
 
         List<Long> teamIds = employeeRepository.findByManagerId(actor.getId())
             .stream().map(Employee::getId).toList();
 
-        return pending.stream()
-            .filter(l -> teamIds.contains(l.getEmployee().getId()))
+        if (teamIds.isEmpty()) {
+            return List.of();
+        }
+
+        return leaveRepository.findByEmployeeIdIn(teamIds).stream()
+            .filter(l -> l.getStatus() == LeaveStatus.PENDING)
             .map(this::toResponse)
             .toList();
     }
@@ -56,6 +61,7 @@ public class ManagerService {
         if (leave.getStatus() != LeaveStatus.PENDING) {
             throw new IllegalArgumentException("Leave is not in pending state");
         }
+        ensureSameCompany(actor, leave.getEmployee());
         ensureCanDecide(actor, leave);
 
         leave.setStatus(LeaveStatus.APPROVED);
@@ -88,6 +94,7 @@ public class ManagerService {
         if (leave.getStatus() != LeaveStatus.PENDING) {
             throw new IllegalArgumentException("Leave is not in pending state");
         }
+        ensureSameCompany(actor, leave.getEmployee());
         ensureCanDecide(actor, leave);
 
         leave.setStatus(LeaveStatus.REJECTED);
@@ -107,6 +114,20 @@ public class ManagerService {
         if (!isTeamMember(actor, leave.getEmployee())) {
             throw new SecurityException("This leave does not belong to your team");
         }
+    }
+
+    private void ensureSameCompany(Employee actor, Employee employee) {
+        if (actor.getCompany() == null || employee.getCompany() == null
+            || !actor.getCompany().getId().equals(employee.getCompany().getId())) {
+            throw new SecurityException("Access denied");
+        }
+    }
+
+    private Long requireCompanyId(Employee employee) {
+        if (employee.getCompany() == null) {
+            throw new SecurityException("Account is not linked to a company");
+        }
+        return employee.getCompany().getId();
     }
 
     private void addComment(Leave leave, Employee author, String comment) {

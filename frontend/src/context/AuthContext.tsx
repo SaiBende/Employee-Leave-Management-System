@@ -5,6 +5,8 @@ import { api } from '@/api/client'
 interface AuthContextType {
   user: User | null
   login: (data: LoginRequest) => Promise<User>
+  establishSession: (user: User) => void
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>
   logout: () => void
   isLoading: boolean
 }
@@ -19,18 +21,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const token = localStorage.getItem('token')
     const stored = localStorage.getItem('user')
     if (token && stored) {
-      setUser(JSON.parse(stored))
+      try {
+        setUser(JSON.parse(stored) as User)
+      } catch {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+      }
     }
     setIsLoading(false)
   }, [])
 
-  const login = async (data: LoginRequest) => {
-    const res = await api.post<{ success: boolean; data: User }>('/auth/login', data)
-    const userData = res.data
+  const establishSession = (userData: User) => {
     localStorage.setItem('token', userData.token)
     localStorage.setItem('user', JSON.stringify(userData))
     setUser(userData)
-    return userData
+  }
+
+  const login = async (data: LoginRequest) => {
+    const res = await api.post<{ success: boolean; data: User }>('/auth/login', data)
+    establishSession(res.data)
+    return res.data
+  }
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    await api.post('/auth/change-password', { currentPassword, newPassword })
+    if (user) {
+      const updated = { ...user, mustChangePassword: false }
+      localStorage.setItem('user', JSON.stringify(updated))
+      setUser(updated)
+    }
   }
 
   const logout = () => {
@@ -40,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, establishSession, changePassword, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   )
