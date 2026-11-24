@@ -49,7 +49,7 @@ Frontend starts at `http://localhost:5173` (proxies `/api` to backend).
 
 ## Setup & Credentials
 
-**First-time setup:** When the database is empty, the first person to register automatically becomes **System Admin**. No hardcoded admin credentials needed.
+**First-time setup:** When the database has no admin, the first person to complete the setup form becomes **System Admin**. Public registration closes immediately after that. All later accounts are created by an **admin** (managers and employees) or by a **manager** (employees only).
 
 After the seeder runs (fresh DB), these demo accounts are created:
 
@@ -72,7 +72,7 @@ Once the backend is running:
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| POST | `/api/auth/register` | No | Register manager |
+| POST | `/api/auth/register` | No (setup only) | Bootstrap first admin; closed once an admin exists |
 | POST | `/api/auth/login` | No | Login, returns JWT |
 | GET | `/api/auth/setup` | No | Check if system needs initial setup |
 | POST | `/api/auth/logout` | Yes | Logout |

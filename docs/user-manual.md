@@ -166,18 +166,19 @@ The Manager Dashboard displays:
 4. Click **Edit** to update total or used days for any leave type
 5. Changes take effect immediately — the employee will see updated balances
 
-### 8. Register a New Manager
+### 8. Add a New Manager (Admin)
 
-- Anyone can register as a manager from the Register page (after admin exists)
-- Fill in name, email, password, select department
-- New managers do not have any employees assigned initially
+- Managers cannot self-register. Only an admin can create a manager.
+- Sign in as Admin, open **Add Employee**, and choose **Manager** as the role.
+- New managers do not have any employees assigned initially.
 
 ### 9. First-Time Setup (Admin Registration)
 
-- When the system has **no users**, the first registration creates a **System Admin**
-- The Register page will show an amber banner: "First registration — you will be the System Admin"
+- When the system has **no admin**, the first registration creates a **System Admin**
+- The Register page shows an amber banner: "This account will be the system administrator"
 - Admin can then manage departments, employees, and view all data
-- After admin exists, subsequent registrations create MANAGER accounts
+- After an admin exists, public registration is **closed**. Accounts are created only
+  by admins (managers/employees) or managers (employees on their team).
 
 ---
 

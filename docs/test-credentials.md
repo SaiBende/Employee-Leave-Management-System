@@ -53,6 +53,7 @@ npm run dev
 ## Admin-Only Notes
 
 - The first user to register on a fresh DB becomes the **System Admin** automatically.
+- After that, public registration is closed. Admins add managers/employees; managers add employees.
 - In the seeded demo DB, the admin is `admin@company.com` / `Admin@123`.
 - Admin can approve/reject **any** leave request (including other managers').
 - Managers can apply for leave too — their requests go to the Admin for approval.

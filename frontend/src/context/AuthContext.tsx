@@ -4,7 +4,7 @@ import { api } from '@/api/client'
 
 interface AuthContextType {
   user: User | null
-  login: (data: LoginRequest) => Promise<void>
+  login: (data: LoginRequest) => Promise<User>
   logout: () => void
   isLoading: boolean
 }
@@ -30,6 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('token', userData.token)
     localStorage.setItem('user', JSON.stringify(userData))
     setUser(userData)
+    return userData
   }
 
   const logout = () => {

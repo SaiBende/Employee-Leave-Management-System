@@ -135,7 +135,8 @@ cat ~/leave_management.sql | docker exec -i ems-postgres psql -U admin -d leave_
 
 A fresh database has no admin user. Open `https://ems.saibende.in/register` and
 create the first account — the backend automatically makes the first registered
-user an `ADMIN`. Subsequent self-registrations become `MANAGER`s.
+user an `ADMIN`. Public registration closes immediately after this; admins create
+managers and employees from the app, and managers create employees for their team.
 
 ## Endpoints
 

@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
+import { api } from '@/api/client'
+import { roleHome } from '@/lib/role-home'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
@@ -12,13 +14,15 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { login, user } = useAuth()
+  const [needsSetup, setNeedsSetup] = useState<boolean | null>(null)
+  const { login } = useAuth()
   const navigate = useNavigate()
 
-  if (user) {
-    const target = user.role === 'MANAGER' ? '/manager/dashboard' : '/employee/dashboard'
-    navigate(target, { replace: true })
-  }
+  useEffect(() => {
+    api.get<{ needsSetup: boolean }>('/auth/setup')
+      .then((res) => setNeedsSetup(res.needsSetup))
+      .catch(() => setNeedsSetup(false))
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,10 +30,8 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      await login({ email, password })
-      const stored = localStorage.getItem('user')
-      const u = stored ? JSON.parse(stored) : null
-      navigate(u?.role === 'MANAGER' ? '/manager/dashboard' : '/employee/dashboard', { replace: true })
+      const loggedIn = await login({ email, password })
+      navigate(roleHome(loggedIn.role), { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid email or password')
     } finally {
@@ -105,10 +107,16 @@ export default function LoginPage() {
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-primary font-semibold hover:text-primary/80 transition-colors">
-              Create one
-            </Link>
+            {needsSetup ? (
+              <>
+                First time here?{' '}
+                <Link to="/register" className="text-primary font-semibold hover:text-primary/80 transition-colors">
+                  Set up the system
+                </Link>
+              </>
+            ) : (
+              <>Need an account? Contact your administrator.</>
+            )}
           </p>
         </form>
       </CardContent>

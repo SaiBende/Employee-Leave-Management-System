@@ -74,7 +74,7 @@ Config       → Security rules, OpenAPI config, web config, database seeder
 5. Subsequent requests include Authorization: Bearer <token>
 6. JwtAuthenticationFilter extracts and validates token on every request
 7. SecurityConfig enforces role-based access:
-   - /api/auth/** → permit all
+   - /api/auth/** → permit all (registration is bootstrap-only and rejected after setup)
    - /api/admin/** → ADMIN only
    - /api/manager/** → ADMIN or MANAGER
    - /api/employees/** → ADMIN/MANAGER/EMPLOYEE with granular controller-level checks
@@ -82,6 +82,11 @@ Config       → Security rules, OpenAPI config, web config, database seeder
    - /api/leave-balances/** → ADMIN or MANAGER
    - Everything else → authenticated
 ```
+
+> **Role assignment:** public registration can only create the very first `ADMIN`.
+> After setup, admins create managers/employees and managers create employees only.
+> The server ignores client-supplied roles on public registration and downgrades
+> manager-created accounts to `EMPLOYEE`.
 
 > **Note:** API responses always wrap `Leave` entities in `LeaveResponse` DTOs. This avoids the Hibernate lazy-proxy serialization bug that previously caused empty-body 403 responses (which the frontend must not treat as auth failures).
 

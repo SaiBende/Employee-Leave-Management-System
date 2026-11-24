@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
+import { roleHome } from '@/lib/role-home'
 import AuthLayout from '@/layouts/AuthLayout'
 import AppLayout from '@/layouts/AppLayout'
 import Home from '@/pages/Home'
@@ -40,10 +41,7 @@ function ProtectedRoute({ children, allowedRole }: { children: React.ReactNode; 
 
   if (!user) return <Navigate to="/login" replace />
   if (allowedRole && user.role !== allowedRole) {
-    const redirect = user.role === 'ADMIN' ? '/admin/dashboard'
-      : user.role === 'MANAGER' ? '/manager/dashboard'
-      : '/employee/dashboard'
-    return <Navigate to={redirect} replace />
+    return <Navigate to={roleHome(user.role)} replace />
   }
   return <>{children}</>
 }
@@ -60,10 +58,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (user) {
-    const redirect = user.role === 'ADMIN' ? '/admin/dashboard'
-      : user.role === 'MANAGER' ? '/manager/dashboard'
-      : '/employee/dashboard'
-    return <Navigate to={redirect} replace />
+    return <Navigate to={roleHome(user.role)} replace />
   }
   return <>{children}</>
 }

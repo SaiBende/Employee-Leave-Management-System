@@ -3,40 +3,21 @@ import { Link, useNavigate } from 'react-router-dom'
 import { api } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { UserPlus, AlertCircle, CheckCircle2, Mail, Lock, User, Building2, Shield } from 'lucide-react'
-
-interface Dept {
-  id: number
-  name: string
-}
+import { UserPlus, AlertCircle, CheckCircle2, Mail, Lock, User, Shield } from 'lucide-react'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
-  const [departments, setDepartments] = useState<Dept[]>([])
-  const [needsSetup, setNeedsSetup] = useState(false)
-  const [form, setForm] = useState({ name: '', email: '', password: '', departmentId: 0, role: 'MANAGER' })
+  const [needsSetup, setNeedsSetup] = useState<boolean | null>(null)
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'ADMIN' })
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     api.get<{ needsSetup: boolean }>('/auth/setup')
-      .then((res) => {
-        setNeedsSetup(res.needsSetup)
-        return api.get<{ success: boolean; data: Dept[] }>('/departments')
-      })
-      .then((res) => setDepartments(res.data))
-      .catch(() => {
-        setDepartments([
-          { id: 1, name: 'Engineering' },
-          { id: 2, name: 'Human Resources' },
-          { id: 3, name: 'Marketing' },
-          { id: 4, name: 'Finance' },
-          { id: 5, name: 'Operations' },
-        ])
-      })
+      .then((res) => setNeedsSetup(res.needsSetup))
+      .catch(() => setNeedsSetup(false))
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,13 +27,47 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       await api.post('/auth/register', form)
-      setSuccess('Registration successful! Redirecting to login...')
+      setSuccess('Admin account created. Redirecting to login...')
       setTimeout(() => navigate('/login'), 1500)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed')
+      setError(err instanceof Error ? err.message : 'Setup failed')
     } finally {
       setLoading(false)
     }
+  }
+
+  if (needsSetup === null) {
+    return (
+      <div className="flex justify-center py-16">
+        <div className="h-8 w-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (!needsSetup) {
+    return (
+      <Card className="border-0 shadow-2xl shadow-primary/10 overflow-hidden">
+        <div className="h-1.5 w-full bg-gradient-to-r from-primary via-primary/70 to-primary/60" />
+        <CardHeader className="text-center pt-8 pb-6">
+          <div className="mx-auto mb-4 p-3 rounded-2xl bg-secondary w-fit">
+            <Lock className="h-6 w-6 text-muted-foreground" />
+          </div>
+          <CardTitle className="text-2xl font-bold">Registration is closed</CardTitle>
+          <CardDescription className="text-sm">
+            Accounts are created by your administrator or manager.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pb-8 px-8 space-y-4">
+          <p className="text-center text-sm text-muted-foreground">
+            Need access? Contact your company administrator and they will create an
+            account for you.
+          </p>
+          <Button className="w-full" size="lg" onClick={() => navigate('/login')}>
+            Back to sign in
+          </Button>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -62,18 +77,14 @@ export default function RegisterPage() {
         <div className="mx-auto mb-4 p-3 rounded-2xl bg-gradient-primary shadow-lg shadow-primary/30 w-fit">
           <UserPlus className="h-6 w-6 text-primary-foreground" />
         </div>
-        <CardTitle className="text-2xl font-bold">Create account</CardTitle>
+        <CardTitle className="text-2xl font-bold">Create admin account</CardTitle>
         <CardDescription className="text-sm">
-          {needsSetup
-            ? 'First registration — you will be the System Admin'
-            : 'Register as a new manager'}
+          First-time setup for your company
         </CardDescription>
-        {needsSetup && (
-          <div className="mt-3 flex items-center justify-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
-            <Shield className="h-4 w-4" />
-            First user setup: You'll get administrator privileges
-          </div>
-        )}
+        <div className="mt-3 flex items-center justify-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
+          <Shield className="h-4 w-4" />
+          This account will be the system administrator
+        </div>
       </CardHeader>
       <CardContent className="pb-8 px-8">
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -96,6 +107,7 @@ export default function RegisterPage() {
               <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 className="pl-10"
+                autoComplete="name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="John Doe"
@@ -111,6 +123,7 @@ export default function RegisterPage() {
               <Input
                 type="email"
                 className="pl-10"
+                autoComplete="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 placeholder="you@company.com"
@@ -126,6 +139,7 @@ export default function RegisterPage() {
               <Input
                 type="password"
                 className="pl-10"
+                autoComplete="new-password"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 placeholder="••••••••"
@@ -134,37 +148,14 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {!needsSetup && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Department</label>
-              <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                <Select
-                  value={String(form.departmentId)}
-                  onValueChange={(val) => setForm({ ...form, departmentId: Number(val) })}
-                >
-                  <SelectTrigger className="pl-10">
-                    <SelectValue placeholder="Select department..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Select department</SelectItem>
-                    {departments.map((d) => (
-                      <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-
           <Button type="submit" size="lg" className="w-full" disabled={loading}>
             {loading ? (
               <span className="flex items-center gap-2">
                 <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                Creating account...
+                Creating admin account...
               </span>
             ) : (
-              needsSetup ? 'Create Admin Account' : 'Create account'
+              'Create Admin Account'
             )}
           </Button>
 

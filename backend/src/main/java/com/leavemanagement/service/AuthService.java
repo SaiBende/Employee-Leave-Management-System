@@ -29,30 +29,33 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public AuthResponse register(RegisterRequest request) {
+    /**
+     * Bootstrap-only registration. The first account ever created becomes the
+     * system administrator; every account after that must be created by an
+     * authenticated admin or manager through the employee endpoints.
+     *
+     * Synchronized so two simultaneous first requests cannot both become admin.
+     */
+    public synchronized AuthResponse register(RegisterRequest request) {
         if (employeeRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already registered");
         }
 
-        boolean hasAdmin = employeeRepository.existsByRole(Role.ADMIN);
-        Role role = hasAdmin ? Role.valueOf(request.getRole().toUpperCase()) : Role.ADMIN;
-
-        Department department;
-        if (!hasAdmin) {
-            department = departmentRepository.findByName("General")
-                .orElseGet(() -> departmentRepository.save(
-                    Department.builder().name("General").build()));
-        } else {
-            department = departmentRepository.findById(request.getDepartmentId())
-                .orElseThrow(() -> new IllegalArgumentException("Department not found"));
+        if (employeeRepository.existsByRole(Role.ADMIN)) {
+            throw new IllegalStateException(
+                "Public registration is closed. Ask an administrator to create your account.");
         }
+
+        Department department = departmentRepository.findByName("General")
+            .orElseGet(() -> departmentRepository.save(
+                Department.builder().name("General").build()));
 
         Employee employee = Employee.builder()
             .name(request.getName())
             .email(request.getEmail())
             .password(passwordEncoder.encode(request.getPassword()))
             .department(department)
-            .role(role)
+            .role(Role.ADMIN)
             .build();
 
         employee = employeeRepository.save(employee);

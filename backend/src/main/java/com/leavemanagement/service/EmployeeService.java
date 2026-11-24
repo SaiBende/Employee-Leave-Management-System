@@ -58,13 +58,24 @@ public class EmployeeService {
         Department department = departmentRepository.findById(request.getDepartmentId())
             .orElseThrow(() -> new IllegalArgumentException("Department not found"));
 
-        Role role = Role.valueOf(request.getRole().toUpperCase());
-
+        Role role;
         Employee manager = null;
+
         if (creator.getRole() == Role.MANAGER) {
+            // Managers can only create employees, and those employees report to them.
+            role = Role.EMPLOYEE;
             manager = creator;
-        } else if (creator.getRole() == Role.ADMIN && request.getManagerId() != null) {
-            manager = employeeRepository.findById(request.getManagerId()).orElse(null);
+        } else if (creator.getRole() == Role.ADMIN) {
+            role = parseAssignableRole(request.getRole());
+            if (request.getManagerId() != null) {
+                manager = employeeRepository.findById(request.getManagerId())
+                    .orElseThrow(() -> new IllegalArgumentException("Manager not found"));
+                if (manager.getRole() != Role.MANAGER) {
+                    throw new IllegalArgumentException("Selected manager must have the MANAGER role");
+                }
+            }
+        } else {
+            throw new SecurityException("Only managers and admins can create employees");
         }
 
         Employee employee = Employee.builder()
@@ -120,6 +131,25 @@ public class EmployeeService {
     private boolean isManagerOf(Employee manager, Employee employee) {
         return employee.getManager() != null
             && employee.getManager().getId().equals(manager.getId());
+    }
+
+    private Role parseAssignableRole(String role) {
+        if (role == null || role.isBlank()) {
+            throw new IllegalArgumentException("Role must be EMPLOYEE or MANAGER");
+        }
+
+        Role parsed;
+        try {
+            parsed = Role.valueOf(role.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Role must be EMPLOYEE or MANAGER");
+        }
+
+        if (parsed == Role.ADMIN) {
+            throw new IllegalArgumentException(
+                "Admin accounts cannot be created through this endpoint");
+        }
+        return parsed;
     }
 
     private EmployeeResponse toResponse(Employee emp) {

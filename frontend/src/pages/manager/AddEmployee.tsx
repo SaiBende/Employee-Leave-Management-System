@@ -131,16 +131,9 @@ export default function AddEmployee() {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Role</label>
-                <Select value={form.role}
-                  onValueChange={(val) => { if (val !== null) setForm({ ...form, role: val }) }}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select role..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="EMPLOYEE">Employee</SelectItem>
-                    <SelectItem value="MANAGER">Manager</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex h-10 items-center rounded-lg border border-input bg-secondary/30 px-3 text-sm text-muted-foreground">
+                  Employee
+                </div>
               </div>
             </div>
 
